@@ -4,6 +4,18 @@
 echo "Listen ${PORT:-8080}" > /etc/apache2/ports.conf
 sed -i -E "s/<VirtualHost \*:.*>/<VirtualHost \*:${PORT:-8080}>/g" /etc/apache2/sites-available/000-default.conf
 
+# Hapus file hot agar Laravel tidak konek ke Vite dev server di production
+rm -f /var/www/html/public/hot
+
+# Generate APP_KEY jika kosong (Railway harus set APP_KEY di environment variable)
+if [ -z "$APP_KEY" ]; then
+    echo "⚠️  APP_KEY tidak ditemukan! Generating sementara..."
+    php artisan key:generate --no-interaction
+fi
+
+# Buat symlink storage → public/storage jika belum ada
+php artisan storage:link --no-interaction 2>/dev/null || true
+
 # Safety net: pastikan hanya mpm_prefork yang aktif sebelum Apache start
 # Ini mencegah error "More than one MPM loaded" di runtime
 a2dismod mpm_event mpm_worker 2>/dev/null || true

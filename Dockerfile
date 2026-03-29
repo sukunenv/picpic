@@ -29,6 +29,13 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 RUN npm install && npm run build
+
+# Hapus file 'hot' agar Laravel tidak mencoba konek ke Vite dev server di production
+RUN rm -f public/hot
+
+# Generate APP_KEY jika belum ada (untuk environment build)
+RUN php artisan key:generate --no-interaction 2>/dev/null || true
+
 RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache
 
