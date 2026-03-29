@@ -1,7 +1,6 @@
 {
   "build": { "builder": "DOCKERFILE" },
   "deploy": {
-    "startCommand": "bash /start.sh",
-    "healthcheckPath": "/"
+    "startCommand": "bash /start.sh"
   }
 }
