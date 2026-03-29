@@ -31,6 +31,7 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' \
 
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
+RUN sed -i 's/\r$//' /start.sh
 
 EXPOSE 8080
 CMD ["/start.sh"]
