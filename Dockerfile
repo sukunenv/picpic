@@ -5,14 +5,15 @@ RUN apt-get update && apt-get install -y \
     libpng-dev libonig-dev libxml2-dev \
     && docker-php-ext-install \
     pdo_mysql mbstring exif pcntl bcmath gd zip \
-    && a2enmod rewrite \
-    && a2dismod mpm_event \
-    && a2enmod mpm_prefork
+    && a2enmod rewrite
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
+
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork || true
 
 WORKDIR /var/www/html
 COPY . .
