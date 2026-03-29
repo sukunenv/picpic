@@ -4,6 +4,15 @@
 echo "Listen ${PORT:-8080}" > /etc/apache2/ports.conf
 sed -i -E "s/<VirtualHost \*:.*>/<VirtualHost \*:${PORT:-8080}>/g" /etc/apache2/sites-available/000-default.conf
 
+# Safety net: pastikan hanya mpm_prefork yang aktif sebelum Apache start
+# Ini mencegah error "More than one MPM loaded" di runtime
+a2dismod mpm_event mpm_worker 2>/dev/null || true
+a2enmod mpm_prefork 2>/dev/null || true
+rm -f /etc/apache2/mods-enabled/mpm_event.conf \
+      /etc/apache2/mods-enabled/mpm_event.load \
+      /etc/apache2/mods-enabled/mpm_worker.conf \
+      /etc/apache2/mods-enabled/mpm_worker.load
+
 # Bersihkan dan cache konfigurasi (baik dijalankan setiap boot)
 php artisan config:cache
 php artisan route:cache  
