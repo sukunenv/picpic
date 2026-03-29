@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #7C6BC4;
+  --secondary: #6B5BB8;
+  --accent: #9B8FD4;
+  --background: #F0EEFF;
+  --card: #FFFFFF;
+  --text-primary: #1B1B1B;
+  --text-secondary: #6B7280;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+  background-color: #e5e5e5; /* Desktop background */
+  margin: 0;
+  color: var(--text-primary);
+}
+
+#app {
+  max-width: 430px;
+  margin: 0 auto;
+  background-color: var(--background);
+  min-height: 100vh;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0,0,0,0.1);
+}
+
+/* Custom scrollbar for better mobile feel */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+}
