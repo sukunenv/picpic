@@ -16,18 +16,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin User
-        User::factory()->create([
-            'name'     => 'Admin Picpic',
-            'email'    => 'admin@picpic.com',
-            'password' => bcrypt('picpic123'),
-            'is_admin' => true,
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@picpic.com'],
+            ['name' => 'Admin Picpic', 'password' => bcrypt('picpic123'), 'is_admin' => true]
+        );
 
         // Test User
-        User::factory()->create([
-            'name'  => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User']
+        );
 
         $this->call(MenuItemSeeder::class);
     }
