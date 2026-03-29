@@ -32,6 +32,15 @@ php artisan route:clear
 # Paksa migrasi database
 php artisan migrate --force
 
+# Otomatisasi Seeder: Jalankan seeder jika database masih kosong (cek tabel users)
+USER_COUNT=$(php artisan tinker --execute="echo App\Models\User::count();" 2>/dev/null | tail -n 1)
+if [[ "$USER_COUNT" == "0" ]]; then
+    echo "🌱 Database masih kosong! Menjalankan seeder..."
+    php artisan db:seed --force
+else
+    echo "✅ Database sudah ada isinya (Count: $USER_COUNT). Melewati seeding."
+fi
+
 # PERBAIKAN PENTING: Jika sebelumnya php artisan dijalankan sebagai 'root', 
 # file log/cache yang dibuat akan dimiliki oleh root. Ini membuat Apache (www-data) 
 # crash karena tidak bisa menulis log! Kita kembalikan kepemilikannya.
