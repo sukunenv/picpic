@@ -22,10 +22,16 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Update Apache configuration to use the Railway PORT environment variable
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+RUN echo '#!/bin/bash\n\
+sed -i "s/Listen 80/Listen ${PORT:-8080}/g" \
+    /etc/apache2/ports.conf\n\
+sed -i "s/:80>/:${PORT:-8080}>/g" \
+    /etc/apache2/sites-available/000-default.conf\n\
+php artisan config:cache\n\
+php artisan route:cache\n\
+php artisan migrate --force\n\
+apache2-foreground' > /start.sh
 
-# EXPOSE statement is not strictly needed for Railway since it injects PORT, but keeping it empty overrides the implied 80.
-# We don't expose 80 anymore because Railway will provide its own PORT.
+RUN chmod +x /start.sh
 
-CMD ["apache2-foreground"]
+CMD ["/start.sh"]

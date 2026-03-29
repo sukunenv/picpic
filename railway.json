@@ -1,7 +1,7 @@
 {
   "build": { "builder": "DOCKERFILE" },
   "deploy": {
-    "startCommand": "php artisan migrate --force && apache2-foreground",
+    "startCommand": "bash /start.sh",
     "healthcheckPath": "/"
   }
 }
