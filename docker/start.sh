@@ -25,9 +25,9 @@ rm -f /etc/apache2/mods-enabled/mpm_event.conf \
       /etc/apache2/mods-enabled/mpm_worker.conf \
       /etc/apache2/mods-enabled/mpm_worker.load
 
-# Bersihkan dan cache konfigurasi (baik dijalankan setiap boot)
-php artisan config:cache
-php artisan route:cache  
+# Clean up configuration cached files
+php artisan config:clear
+php artisan route:clear 
 
 # Paksa migrasi database
 php artisan migrate --force
@@ -35,7 +35,12 @@ php artisan migrate --force
 # PERBAIKAN PENTING: Jika sebelumnya php artisan dijalankan sebagai 'root', 
 # file log/cache yang dibuat akan dimiliki oleh root. Ini membuat Apache (www-data) 
 # crash karena tidak bisa menulis log! Kita kembalikan kepemilikannya.
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
+
+# Matikan cache configurasi sementara agar APP_DEBUG=true dari .env terbaca
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
 
 # Gunakan 'exec' agar apache2 mengambil PID 1, mencegah Railway mendeteksi 
 # bash parent yang mati duluan sebagai "Crashed"

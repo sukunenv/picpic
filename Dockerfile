@@ -33,11 +33,15 @@ RUN npm install && npm run build
 # Hapus file 'hot' agar Laravel tidak mencoba konek ke Vite dev server di production
 RUN rm -f public/hot
 
+# Buat baseline .env agar artisan command tidak error dan key:generate bisa menulis file
+RUN cp .env.example .env
+
 # Generate APP_KEY jika belum ada (untuk environment build)
 RUN php artisan key:generate --no-interaction 2>/dev/null || true
 
-RUN chown -R www-data:www-data storage bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
+# Pastikan www-data bisa menulis ke storage, bootstrap cache, DAN folder database (untuk lock SQLite)
+RUN chown -R www-data:www-data storage bootstrap/cache database
+RUN chmod -R 775 storage bootstrap/cache database
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
