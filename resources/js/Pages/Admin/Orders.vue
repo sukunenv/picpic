@@ -1,219 +1,298 @@
 <template>
-  <AdminLayout title="Kelola Pesanan">
-    <div class="orders-page">
-      <div class="page-header">
-        <div>
-          <h2 class="page-title">Monitoring Pesanan</h2>
-          <p class="page-sub">Terakhir diperbarui: {{ lastUpdate }}</p>
-        </div>
-        <div class="header-actions">
-          <div class="refresh-indicator" :class="{ refreshing }">
-            <ArrowPathIcon class="h-4 w-4" :class="{ 'animate-spin': refreshing }" />
-            <span>Auto-refresh aktif (5s)</span>
+  <AdminLayout>
+    <div class="lg:p-6 bg-gray-50 min-h-screen">
+      <!-- Toaster -->
+      <transition name="toast-slide">
+        <div v-if="showToast" class="fixed top-6 right-6 z-[120] bg-white shadow-xl shadow-black/10 rounded-2xl p-4 flex items-center gap-3 border border-gray-100">
+          <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+            <BellAlertIcon class="h-5 w-5 text-green-600" />
+          </div>
+          <div>
+            <p class="font-bold text-gray-900 text-sm">Pesanan Baru!</p>
+            <p class="text-xs text-gray-500">Ada pesanan baru masuk 🔔</p>
           </div>
         </div>
-      </div>
+      </transition>
 
-      <!-- Filter Tabs -->
-      <div class="filters-container">
-        <div class="tabs-row">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            class="filter-tab"
-            :class="{ active: activeTab === tab.id }"
-            @click="activeTab = tab.id"
-          >
-            {{ tab.label }}
-            <span class="tab-badge" v-if="getCount(tab.id) > 0">{{ getCount(tab.id) }}</span>
+      <!-- Page Header -->
+      <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 m-0">Monitoring Pesanan</h2>
+          <p class="text-sm text-gray-500 mt-1">Terakhir diperbarui: {{ lastUpdate }}</p>
+        </div>
+        <div class="flex items-center gap-3 self-start md:self-auto">
+          <!-- Refresh Status -->
+          <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm text-xs font-semibold text-gray-600">
+            <div class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+            </div>
+            Auto-refresh aktif (5s)
+          </div>
+          
+          <!-- Manual Refresh -->
+          <button @click="manualRefresh" class="bg-white p-2 rounded-full border border-gray-200 shadow-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            <ArrowPathIcon class="h-5 w-5" :class="{ 'animate-spin': manualRefreshing }" />
           </button>
         </div>
-        
-        <div class="toggle-row">
-          <label class="toggle-label">
-            <input type="checkbox" v-model="onlyUnpaid" />
-            <span class="toggle-text">Hanya Belum Bayar</span>
-          </label>
-        </div>
       </div>
 
-      <!-- Orders List -->
-      <div class="orders-grid">
-        <div v-if="filteredOrders.length === 0" class="empty-orders">
-          <div class="empty-icon">☕</div>
-          <h3>Tidak ada pesanan</h3>
-          <p>Belum ada pesanan yang sesuai dengan filter saat ini.</p>
+      <!-- Filters & Search -->
+      <div class="flex flex-col gap-4 mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <!-- Tabs Scrollable -->
+          <div class="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto scrollbar-hide">
+            <button
+              v-for="tab in tabs" :key="tab.id"
+              class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border-2 transition-all duration-200"
+              :class="searchState.status === tab.id 
+                ? 'border-[#6367FF] bg-[#F0EEFF] text-[#6367FF]' 
+                : 'border-transparent bg-white text-gray-500 hover:bg-gray-100'"
+              @click="searchState.status = tab.id"
+            >
+              {{ tab.label }}
+              <span v-if="counts[tab.id] > 0" class="bg-[#6367FF] text-white text-[10px] px-1.5 py-0.5 rounded-full">{{ counts[tab.id] }}</span>
+            </button>
+          </div>
+          
+          <!-- Search -->
+          <div class="w-full md:w-64 relative shrink-0">
+            <MagnifyingGlassIcon class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input 
+              v-model="searchState.search" 
+              type="text" 
+              placeholder="Cari order # atau nama..." 
+              class="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#6367FF] focus:ring-1 focus:ring-[#6367FF] shadow-sm bg-white"
+            >
+          </div>
         </div>
 
-        <div
-          v-for="order in filteredOrders"
-          :key="order.id"
-          class="order-card"
-          :class="{ 'border-pending': order.status === 'pending' }"
-        >
-          <div class="order-card-header">
-            <div class="order-meta">
-              <span class="order-num">#{{ order.id.toString().padStart(5, '0') }}</span>
-              <span class="order-time">{{ formatTime(order.created_at) }}</span>
+        <!-- Checkbox Only Unpaid -->
+        <label class="inline-flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-xl border border-gray-200 shadow-sm w-fit self-start">
+          <input type="checkbox" v-model="searchState.only_unpaid" class="w-4 h-4 text-[#6367FF] rounded focus:ring-[#6367FF]">
+          <span class="text-sm font-bold text-gray-700">Hanya Belum Bayar</span>
+        </label>
+      </div>
+
+      <!-- Content Area -->
+      <div v-if="orders.data.length === 0" class="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
+        <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+          <InboxIcon class="h-10 w-10 text-gray-300" />
+        </div>
+        <h3 class="text-lg font-bold text-gray-800 mb-1">
+          {{ hasActiveFilters ? 'Tidak ada pesanan dengan filter ini' : 'Belum ada pesanan' }}
+        </h3>
+        <p class="text-gray-500 text-sm max-w-xs text-center">
+          {{ hasActiveFilters ? 'Coba ubah kata pencarian atau hapus filter status saat ini.' : 'Semua pesanan yang masuk akan otomatis tertampil di sini.' }}
+        </p>
+      </div>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <!-- Order Cards -->
+        <div v-for="order in orders.data" :key="order.id" class="bg-white rounded-[20px] p-5 shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
+          <!-- Card Header -->
+          <div class="flex items-start justify-between mb-3 border-b border-gray-100 pb-3">
+            <div class="flex flex-col">
+              <span class="text-[#6367FF] font-black text-lg">#{{ order.id.toString().padStart(5, '0') }}</span>
+              <span class="text-xs text-gray-500 font-bold">{{ formatTime(order.created_at) }}</span>
             </div>
-            <div class="order-badges">
-              <span class="badge-payment" :class="order.payment_status">
-                {{ order.payment_status === 'paid' ? 'LUNAS' : 'BAYAR DI KASIR' }}
+            <div class="flex flex-col items-end gap-1.5">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md" :class="getPaymentBadgeClass(order.payment_status)">
+                {{ order.payment_status === 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}
               </span>
-              <span class="badge-status" :class="order.status">
-                {{ order.status.toUpperCase() }}
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase" :class="getStatusBadgeClass(order.status)">
+                {{ getStatusLabel(order.status) }}
               </span>
             </div>
           </div>
-
-          <div class="order-customer">
-            <div class="cust-row">
-              <UserIcon class="h-4 w-4 text-gray-400" />
-              <span class="cust-name">{{ order.customer_name }}</span>
-            </div>
-            <div class="cust-row" v-if="order.table_number">
-              <HashtagIcon class="h-4 w-4 text-gray-400" />
-              <span class="cust-table">Meja: {{ order.table_number }}</span>
+          
+          <!-- Card Body -->
+          <div class="flex items-center gap-2 mb-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100/50">
+            <UserIcon class="h-4 w-4 text-gray-500 shrink-0" />
+            <span class="font-bold text-sm text-gray-800 flex-1 truncate">{{ order.customer_name }}</span>
+            <div v-if="order.table_number" class="flex items-center gap-1 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-200 shrink-0">
+              <span class="text-[10px] font-black text-gray-600">Meja {{ order.table_number }}</span>
             </div>
           </div>
 
-          <div class="order-items-list">
-            <div v-for="item in order.order_items" :key="item.id" class="order-item-row">
-              <span class="item-qty">{{ item.quantity }}x</span>
-              <span class="item-name">{{ item.menu_item?.name }}</span>
-              <p v-if="item.note" class="item-note">"{{ item.note }}"</p>
-            </div>
+          <!-- Items List -->
+          <div class="flex-1 mb-4 overflow-y-auto max-h-[150px] pr-2 custom-scroll">
+            <ul class="space-y-2">
+              <li v-for="item in order.order_items" :key="item.id" class="flex gap-2 items-start text-sm">
+                <span class="font-black text-[#6367FF] shrink-0">{{ item.quantity }}x</span>
+                <div class="flex flex-col flex-1">
+                  <span class="font-bold text-gray-700 leading-tight">{{ item.menu_item?.name }}</span>
+                  <p v-if="item.note" class="text-[11px] text-red-500 italic font-semibold leading-tight mt-0.5">"{{ item.note }}"</p>
+                </div>
+              </li>
+            </ul>
           </div>
-
-          <div class="order-card-footer">
-            <div class="order-total">
-              <span class="total-label">Total:</span>
-              <span class="total-val">{{ formatPrice(order.total_price) }}</span>
+          
+          <!-- Card Footer -->
+          <div class="mt-auto border-t border-gray-100 pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex flex-col">
+              <span class="text-xs font-semibold text-gray-500">Total Pembayaran</span>
+              <span class="text-[#6367FF] font-black text-lg leading-tight">{{ formatPrice(order.total_price) }}</span>
             </div>
             
-            <div class="order-actions">
-              <!-- Action: Tandai Bayar -->
-              <button
-                v-if="order.payment_status === 'unpaid'"
-                class="btn-action pay"
-                @click="openPayModal(order)"
+            <div class="flex gap-2 sm:w-auto w-full">
+              <a 
+                :href="route('order.receipt', order.id)" 
+                target="_blank"
+                class="h-9 w-9 flex items-center justify-center bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors"
               >
+                <PrinterIcon class="h-5 w-5" />
+              </a>
+              <button v-if="order.payment_status === 'unpaid'" @click="openPayModal(order)" class="flex-1 sm:flex-none bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold text-xs px-3 py-2 rounded-lg transition-colors shadow-sm">
                 Tandai Dibayar
               </button>
-
-              <!-- Action: Proses -->
-              <button
-                v-if="order.status === 'pending'"
-                class="btn-action process"
-                @click="updateStatus(order.id, 'processing')"
-              >
+              
+              <button v-if="order.status === 'pending'" @click="updateStatus(order.id, 'processing')" class="flex-1 sm:flex-none bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors shadow-sm">
                 Proses
               </button>
-
-              <!-- Action: Selesai -->
-              <button
-                v-if="order.status === 'processing'"
-                class="btn-action done"
-                @click="updateStatus(order.id, 'done')"
-              >
+              
+              <button v-if="order.status === 'processing'" @click="updateStatus(order.id, 'done')" class="flex-1 sm:flex-none bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors shadow-sm">
                 Selesai
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Pagination -->
+      <div v-if="orders.data.length > 0" class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+        <span class="text-sm text-gray-500 font-medium font-sans">
+          Menampilkan <span class="font-bold text-gray-800">{{ orders.from }}</span>-<span class="font-bold text-gray-800">{{ orders.to }}</span> dari <span class="font-bold text-gray-800">{{ orders.total }}</span> pesanan
+        </span>
+        <div class="flex items-center gap-1">
+          <button 
+            @click="goToPage(orders.prev_page_url)"
+            :disabled="!orders.prev_page_url"
+            class="px-3 py-2 rounded-lg text-sm font-bold border border-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+          >
+            &larr; Sebelumnya
+          </button>
+          
+          <div class="hidden md:flex gap-1 mx-2">
+            <button
+              v-for="link in paginationLinks"
+              :key="link.label"
+              @click="goToPage(link.url)"
+              :disabled="!link.url || link.active"
+              class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold border transition-colors"
+              :class="link.active ? 'bg-[#6367FF] border-[#6367FF] text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'"
+            >
+              {{ link.label }}
+            </button>
+          </div>
+          
+          <button 
+            @click="goToPage(orders.next_page_url)"
+            :disabled="!orders.next_page_url"
+            class="px-3 py-2 rounded-lg text-sm font-bold border border-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+          >
+            Berikutnya &rarr;
+          </button>
+        </div>
+      </div>
+
     </div>
 
     <!-- ── PAYMENT MODAL ────────────────────────────────────── -->
     <transition name="modal">
-      <div v-if="showPayModal" class="modal-overlay" @click.self="showPayModal = false">
-        <div class="admin-modal">
-          <div class="modal-header">
-            <h3>Konfirmasi Pembayaran</h3>
-            <button @click="showPayModal = false" class="close-btn">×</button>
+      <div v-if="showPayModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4" @click.self="showPayModal = false">
+        <div class="bg-white w-full max-w-sm rounded-[24px] overflow-hidden shadow-2xl scale-100 transition-transform">
+          <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 class="font-bold text-lg text-gray-900 m-0 leading-none">Konfirmasi Bayar</h3>
+            <button @click="showPayModal = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
           </div>
-          <div class="modal-body">
-            <p class="modal-info">Pilih metode pembayaran untuk Order <strong>#{{ selectedOrder?.id }}</strong> ({{ selectedOrder?.customer_name }}):</p>
-            
-            <div class="pay-options">
-              <button 
-                v-for="opt in payOptions" 
-                :key="opt.id"
-                class="pay-opt-btn"
-                @click="confirmPayment(opt.id)"
-              >
+          <div class="p-5">
+            <p class="text-sm text-gray-600 mb-4 leading-relaxed">Pilih metode pembayaran untuk Order <strong class="text-[#6367FF]">#{{ selectedOrder?.id }}</strong> atas nama <strong class="text-gray-800">{{ selectedOrder?.customer_name }}</strong>:</p>
+            <div class="flex flex-col gap-2">
+              <button v-for="opt in payOptions" :key="opt.id" @click="confirmPayment(opt.id)" class="flex items-center gap-3 p-3 rounded-xl border-2 border-gray-100 bg-white hover:border-[#6367FF] hover:bg-[#F0EEFF] text-left transition-colors text-gray-700 hover:text-[#6367FF] font-bold">
                 <component :is="opt.icon" class="h-5 w-5" />
                 <span>{{ opt.label }}</span>
               </button>
             </div>
           </div>
-          <div class="modal-footer">
-            <button @click="showPayModal = false" class="btn-cancel">Batal</button>
+          <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+            <button @click="showPayModal = false" class="px-5 py-2 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-200 transition-colors">Batal</button>
           </div>
         </div>
       </div>
     </transition>
+
+    <!-- ── SUCCESS PAYMENT MODAL ──────────────────────────────── -->
+    <transition name="modal">
+      <div v-if="showSuccessModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-gray-900/60 backdrop-blur-md p-4">
+        <div class="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl scale-100 p-8 text-center border border-white/20">
+          <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircleIcon class="h-10 w-10 text-green-600 shadow-sm" />
+          </div>
+          
+          <h3 class="text-2xl font-black text-gray-900 mb-2">Pembayaran Berhasil! ✅</h3>
+          
+          <div class="bg-gray-50 rounded-2xl p-4 mb-8 border border-gray-100">
+            <p class="text-sm font-black text-[#6367FF] mb-1">
+              Order #{{ selectedOrder?.id?.toString().padStart(5, '0') }}
+            </p>
+            <p class="text-base font-bold text-gray-800">
+              {{ selectedOrder?.customer_name }}
+              <span v-if="selectedOrder?.table_number" class="text-gray-400 mx-1">•</span>
+              <span v-if="selectedOrder?.table_number" class="text-gray-500">Meja {{ selectedOrder?.table_number }}</span>
+            </p>
+            <div class="h-px bg-gray-200 my-3"></div>
+            <p class="text-xl font-black text-gray-900">{{ formatPrice(selectedOrder?.total_price || 0) }}</p>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <a 
+              :href="route('order.receipt', selectedOrder?.id)" 
+              target="_blank"
+              @click="showSuccessModal = false"
+              class="w-full bg-[#6367FF] hover:bg-[#4B3FA0] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#6367FF]/30 transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <PrinterIcon class="h-5 w-5" />
+              Cetak Struk
+            </a>
+            <button 
+              @click="showSuccessModal = false" 
+              class="w-full py-4 bg-white border-2 border-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-50 transition-all active:scale-95"
+            >
+              Lewati
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
   </AdminLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { debounce } from 'lodash';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { 
-  ArrowPathIcon, 
-  UserIcon, 
-  HashtagIcon,
-  CheckCircleIcon,
-  BanknotesIcon,
-  QrCodeIcon,
-  ArrowsRightLeftIcon as TransferIcon
+  ArrowPathIcon, UserIcon, HashtagIcon,
+  BanknotesIcon, QrCodeIcon, ArrowsRightLeftIcon as TransferIcon,
+  MagnifyingGlassIcon, InboxIcon, BellAlertIcon, PrinterIcon
 } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
-  orders: Array
+  orders: Object,
+  filters: Object,
+  counts: Object
 });
 
-const activeTab = ref('semua');
-const onlyUnpaid = ref(false);
-const refreshing = ref(false);
-const lastUpdate = ref(new Date().toLocaleTimeString());
+const lastUpdate = ref(new Date().toLocaleTimeString('id-ID'));
+const manualRefreshing = ref(false);
+const showToast = ref(false);
+let toastTimeout = null;
 
-// Modal State
-const showPayModal = ref(false);
-const selectedOrder = ref(null);
-
-const payOptions = [
-  { id: 'cash',     label: 'Cash / Tunai',     icon: BanknotesIcon },
-  { id: 'qris',     label: 'QRIS (di Kasir)',   icon: QrCodeIcon },
-  { id: 'transfer', label: 'Transfer Bank',   icon: TransferIcon },
-];
-
-const tabs = [
-  { id: 'semua',     label: 'Semua' },
-  { id: 'pending',   label: 'Pending' },
-  { id: 'processing',label: 'Diproses' },
-  { id: 'done',      label: 'Selesai' },
-];
-
-const filteredOrders = computed(() => {
-  let list = props.orders;
-  if (activeTab.value !== 'semua') {
-    list = list.filter(o => o.status === activeTab.value);
-  }
-  if (onlyUnpaid.value) {
-    list = list.filter(o => o.payment_status === 'unpaid');
-  }
-  return list;
-});
-
-function getCount(status) {
-  if (status === 'semua') return props.orders.length;
-  return props.orders.filter(o => o.status === status).length;
-}
-
-// ── AUDIO NOTIFIKASI ──────────────────────────────────
-function playDing() {
+// Audio
+const playDing = () => {
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
@@ -223,50 +302,171 @@ function playDing() {
 
   oscillator.type = 'sine';
   oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5
-  oscillator.frequency.exponentialRampToValueAtTime(440, audioContext.currentTime + 0.5); // A4
+  oscillator.frequency.exponentialRampToValueAtTime(440, audioContext.currentTime + 0.3); // A4
 
   gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
 
   oscillator.start();
-  oscillator.stop(audioContext.currentTime + 0.5);
-}
+  oscillator.stop(audioContext.currentTime + 0.3);
+};
 
-// ── AUTO REFRESH ──────────────────────────────────────
-let refreshInterval = null;
+// Filter State
+const searchState = reactive({
+  status: props.filters?.status || 'semua',
+  only_unpaid: props.filters?.only_unpaid === 'true' || false,
+  search: props.filters?.search || '',
+  per_page: props.filters?.per_page || 9
+});
 
-function refreshData() {
-  refreshing.value = true;
+const hasActiveFilters = computed(() => {
+  return searchState.status !== 'semua' || searchState.only_unpaid || searchState.search.length > 0;
+});
+
+// Watch Filters and Push to Inertia
+const fetchOrders = debounce(() => {
+  router.get(route('admin.orders'), {
+    status: searchState.status,
+    only_unpaid: searchState.only_unpaid ? 'true' : 'false',
+    search: searchState.search,
+    per_page: searchState.per_page,
+    page: 1 // reset to page 1 on search
+  }, {
+    preserveState: true,
+    preserveScroll: true,
+    only: ['orders', 'counts', 'filters'],
+    onSuccess: () => { lastUpdate.value = new Date().toLocaleTimeString('id-ID'); }
+  });
+}, 300);
+
+watch([
+  () => searchState.status,
+  () => searchState.only_unpaid,
+  () => searchState.search
+], () => {
+  fetchOrders();
+});
+
+// Calculate Device Per Page
+onMounted(() => {
+  const isMobile = window.innerWidth < 1024; // Use lg breakpoint for 9 orders desktop vs fewer
+  const targetPerPage = isMobile ? 5 : 9;
+  
+  if (searchState.per_page != targetPerPage) {
+    searchState.per_page = targetPerPage;
+    fetchOrders(); // Initial alignment of count requirement
+  }
+});
+
+// Polling background reload
+let pollingInterval = null;
+onMounted(() => {
+  pollingInterval = setInterval(() => {
+    // Determine route manually to preserve existing standard url args (like page).
+    // The current pagination page parameter is actually accessible on page url, it's safer to use reload.
+    router.reload({
+      only: ['orders', 'counts'],
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => { lastUpdate.value = new Date().toLocaleTimeString('id-ID'); }
+    });
+  }, 5000);
+});
+
+onUnmounted(() => {
+  clearInterval(pollingInterval);
+});
+
+// Monitor new orders to ring bell
+watch(() => props.orders?.data, (newVal, oldVal) => {
+  if (newVal && oldVal) {
+    if (newVal.length > 0 && oldVal.length > 0) {
+      if (newVal[0].id > oldVal[0].id) {
+        playDing();
+        showToast.value = true;
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => { showToast.value = false; }, 3000);
+      }
+    }
+  }
+}, { deep: false });
+
+function manualRefresh() {
+  manualRefreshing.value = true;
   router.reload({
-    only: ['orders'],
-    onFinish: () => {
-      refreshing.value = false;
-      lastUpdate.value = new Date().toLocaleTimeString();
+    only: ['orders', 'counts'],
+    preserveScroll: true,
+    preserveState: true,
+    onFinish: () => { 
+      manualRefreshing.value = false; 
+      lastUpdate.value = new Date().toLocaleTimeString('id-ID');
     }
   });
 }
 
-// Track new orders for sound
-watch(() => props.orders.length, (newVal, oldVal) => {
-  if (newVal > oldVal && oldVal !== 0) {
-    playDing();
-  }
-});
-
-onMounted(() => {
-  refreshInterval = setInterval(refreshData, 5000);
-});
-
-onUnmounted(() => {
-  clearInterval(refreshInterval);
-});
-
-// ── ACTIONS ───────────────────────────────────────────
-function updateStatus(id, status) {
-  router.post(route('admin.orders.status', id), { status }, {
-    preserveScroll: true
+function goToPage(url) {
+  if (!url) return;
+  router.get(url, {
+    status: searchState.status,
+    only_unpaid: searchState.only_unpaid ? 'true' : 'false',
+    search: searchState.search,
+    per_page: searchState.per_page
+  }, {
+    preserveState: true,
+    preserveScroll: true,
+    only: ['orders', 'counts', 'filters']
   });
 }
+
+const paginationLinks = computed(() => {
+  if (!props.orders?.links) return [];
+  return props.orders.links.filter(l => !l.label.includes('&laquo;') && !l.label.includes('&raquo;'));
+});
+
+// Tabs setup
+const tabs = [
+  { id: 'semua', label: 'Semua' },
+  { id: 'pending', label: 'Menunggu' },
+  { id: 'processing', label: 'Diproses' },
+  { id: 'done', label: 'Selesai' },
+];
+
+// Badge Classes
+function getPaymentBadgeClass(status) {
+  if (status === 'paid') return 'bg-green-100 text-green-700';
+  return 'bg-red-100 text-red-700'; 
+}
+
+function getStatusBadgeClass(status) {
+  switch(status) {
+    case 'pending': return 'bg-yellow-100 text-yellow-700';
+    case 'processing': return 'bg-blue-100 text-blue-700';
+    case 'done': return 'bg-purple-100 text-purple-700';
+    default: return 'bg-gray-100 text-gray-700';
+  }
+}
+
+function getStatusLabel(status) {
+  switch(status) {
+    case 'pending': return 'Menunggu';
+    case 'processing': return 'Diproses';
+    case 'done': return 'Selesai';
+    default: return status;
+  }
+}
+
+function updateStatus(id, status) {
+  router.post(route('admin.orders.status', id), { status }, { preserveScroll: true });
+}
+
+const showPayModal = ref(false);
+const showSuccessModal = ref(false);
+const selectedOrder = ref(null);
+const payOptions = [
+  { id: 'cash', label: 'Cash / Tunai', icon: BanknotesIcon },
+  { id: 'qris', label: 'QRIS (di Kasir)', icon: QrCodeIcon },
+  { id: 'transfer', label: 'Transfer Bank', icon: TransferIcon },
+];
 
 function openPayModal(order) {
   selectedOrder.value = order;
@@ -275,330 +475,33 @@ function openPayModal(order) {
 
 function confirmPayment(method) {
   if (!selectedOrder.value) return;
-  
-  updatePayment(selectedOrder.value.id, 'paid', method);
-  showPayModal.value = false;
-}
-
-function updatePayment(id, payment_status, payment_method = null) {
-  router.post(route('admin.orders.payment', id), { 
-    payment_status,
-    payment_method
-  }, {
-    preserveScroll: true
+  router.post(route('admin.orders.payment', selectedOrder.value.id), { 
+    payment_status: 'paid',
+    payment_method: method
+  }, { 
+    preserveScroll: true,
+    onSuccess: () => {
+      showPayModal.value = false;
+      showSuccessModal.value = true;
+    }
   });
 }
 
-// ── FORMATTERS ────────────────────────────────────────
-function formatPrice(price) {
-  return 'Rp ' + Number(price).toLocaleString('id-ID');
-}
-
-function formatTime(dateStr) {
-  return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
+function formatPrice(price) { return 'Rp ' + Number(price).toLocaleString('id-ID'); }
+function formatTime(dateStr) { return new Date(dateStr).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); }
 </script>
 
 <style scoped>
-.orders-page {
-  animation: fadeIn 0.4s ease-out;
-}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-thumb { background-color: #E5E7EB; border-radius: 4px; }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+.toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateY(-20px) scale(0.95); }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.page-title { font-size: 24px; font-weight: 800; color: #1B1B1B; margin: 0; }
-.page-sub { font-size: 13px; color: #6B7280; margin: 4px 0 0; }
-
-.refresh-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #7C6BC4;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  transition: all 0.3s;
-}
-
-.refresh-indicator.refreshing {
-  background: #F0EEFF;
-  color: #9B8FD4;
-}
-
-/* Filters */
-.filters-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.tabs-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-}
-
-.tabs-row::-webkit-scrollbar { display: none; }
-
-.filter-tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: white;
-  border: 2px solid transparent;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #6B7280;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-}
-
-.filter-tab.active {
-  border-color: #7C6BC4;
-  color: #7C6BC4;
-  background: #F0EEFF;
-}
-
-.tab-badge {
-  background: #7C6BC4;
-  color: white;
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 6px;
-}
-
-.toggle-row {
-  display: flex;
-  align-items: center;
-}
-
-.toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  background: white;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-}
-
-.toggle-label input { width: 18px; height: 18px; accent-color: #7C6BC4; }
-
-/* Grid Orders */
-.orders-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-}
-
-@media (max-width: 640px) {
-  .orders-grid { grid-template-columns: 1fr; }
-}
-
-.order-card {
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-  display: flex;
-  flex-direction: column;
-  border-top: 5px solid transparent;
-  transition: all 0.3s;
-}
-
-.order-card.border-pending { border-top-color: #D1D5DB; }
-.order-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-}
-
-.order-meta { display: flex; flex-direction: column; }
-.order-num { font-size: 18px; font-weight: 800; color: #7C6BC4; }
-.order-time { font-size: 12px; color: #9CA3AF; font-weight: 600; }
-
-.order-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-
-.badge-payment {
-  font-size: 9px;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.badge-payment.unpaid { background: #FEF3C7; color: #92400E; } /* Kuning */
-.badge-payment.paid { background: #DCFCE7; color: #166534; }   /* Hijau */
-
-.badge-status {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: #F3F4F6;
-  color: #6B7280;
-}
-
-.badge-status.processing { background: #E0F2FE; color: #0369A1; }
-.badge-status.done { background: #EDE9FE; color: #5B21B6; }
-
-.order-customer {
-  background: #F9FAFB;
-  padding: 12px;
-  border-radius: 12px;
-  margin-bottom: 16px;
-}
-
-.cust-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-.cust-row:last-child { margin-bottom: 0; }
-.cust-name { font-weight: 700; font-size: 14px; color: #1B1B1B; }
-.cust-table { font-weight: 600; font-size: 12px; color: #6B7280; }
-
-.order-items-list {
-  flex: 1;
-  margin-bottom: 20px;
-}
-
-.order-item-row {
-  padding: 6px 0;
-  border-bottom: 1px dashed #F0F0F0;
-}
-
-.order-item-row:last-child { border-bottom: none; }
-
-.item-qty { font-weight: 800; color: #7C6BC4; margin-right: 8px; font-size: 14px; }
-.item-name { font-size: 14px; font-weight: 600; color: #374151; }
-.item-note { font-size: 11px; color: #ef4444; font-weight: 500; margin: 2px 0 0 24px; font-style: italic; }
-
-.order-card-footer {
-  border-top: 1px solid #F3F4F6;
-  padding-top: 16px;
-}
-
-.order-total {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.total-label { font-size: 14px; font-weight: 600; color: #6B7280; }
-.total-val { font-size: 18px; font-weight: 800; color: #7C6BC4; }
-
-.order-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.btn-action {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-action.pay { background: #FDE68A; color: #92400E; }
-.btn-action.pay:hover { background: #FCD34D; }
-
-.btn-action.process { background: #7C6BC4; color: white; }
-.btn-action.process:hover { background: #5A4DA0; }
-
-.btn-action.done { background: #9B8FD4; color: white; }
-.btn-action.done:hover { background: #7C6BC4; }
-
-/* Admin Modals */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.admin-modal {
-  background: white;
-  width: 100%;
-  max-width: 400px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
-
-.modal-header {
-  padding: 20px;
-  border-bottom: 1px solid #F3F4F6;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 { margin: 0; font-size: 18px; font-weight: 800; color: #1B1B1B; }
-
-.close-btn { background: none; border: none; font-size: 24px; color: #9CA3AF; cursor: pointer; }
-
-.modal-body { padding: 20px; }
-.modal-info { font-size: 14px; color: #6B7280; margin-bottom: 20px; line-height: 1.5; }
-
-.pay-options { display: flex; flex-direction: column; gap: 10px; }
-
-.pay-opt-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  border: 2px solid #F3F4F6;
-  border-radius: 12px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 700;
-  color: #374151;
-  text-align: left;
-}
-
-.pay-opt-btn:hover {
-  border-color: #7C6BC4;
-  background: #F0EEFF;
-  color: #7C6BC4;
-}
-
-.modal-footer { padding: 16px 20px; border-top: 1px solid #F3F4F6; display: flex; justify-content: flex-end; }
-.btn-cancel { background: #F9FAFB; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; color: #6B7280; cursor: pointer; }
-
-.modal-enter-active, .modal-leave-active { transition: opacity 0.3s; }
+.modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
+.modal-enter-active > div > div { animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes modalPop { 0% { transform: scale(0.95) translateY(10px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
 </style>

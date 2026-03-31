@@ -1,98 +1,128 @@
 <template>
   <AppLayout>
-    <div class="menu-page">
+    <div class="menu-page min-h-screen bg-gray-50 pb-28">
 
-      <!-- ── TOP BAR ───────────────────────────────────────── -->
-      <div class="menu-topbar">
-        <h1 class="menu-title">Menu</h1>
-        <div class="search-wrap">
-          <div class="search-bar">
-            <MagnifyingGlassIcon class="h-5 w-5 text-gray-400 flex-shrink-0" />
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Cari menu…"
-              class="search-input"
-              @input="debouncedFetch"
-            />
-            <button v-if="searchQuery" class="clear-btn" @click="clearSearch">✕</button>
+      <!-- ── HEADER ───────────────────────────────────────── -->
+      <div class="sticky top-0 z-40 bg-primary px-6 pt-12 pb-6 rounded-b-[32px] shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+          <h1 class="text-white text-2xl font-bold">Pilih Menu</h1>
+          <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+            <AdjustmentsHorizontalIcon class="h-6 w-6 text-white" />
           </div>
+        </div>
+        <div class="relative group">
+          <MagnifyingGlassIcon class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/50 group-focus-within:text-accent transition-colors" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Cari kopi, teh, atau snack..."
+            class="w-full bg-white/10 border-none rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/40 focus:ring-2 focus:ring-accent transition-all text-sm font-medium"
+            @input="debouncedFetch"
+          />
+          <button v-if="searchQuery" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white" @click="clearSearch">
+            <XMarkIcon class="h-4 w-4" />
+          </button>
         </div>
       </div>
 
       <!-- ── KATEGORI ───────────────────────────────────────── -->
-      <div class="category-row">
-        <button
-          v-for="cat in categories"
-          :key="cat.id"
-          class="cat-pill"
-          :class="{ active: activeCategory === cat.id }"
-          @click="setCategory(cat.id)"
-        >
-          {{ cat.label }}
-        </button>
+      <div class="mt-6 mb-4">
+        <div class="flex gap-3 overflow-x-auto px-6 hide-scrollbar">
+          <button
+            v-for="cat in categories"
+            :key="cat.id"
+            class="px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 border"
+            :class="activeCategory === cat.id 
+              ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105' 
+              : 'bg-white border-gray-100 text-gray-400'"
+            @click="setCategory(cat.id)"
+          >
+            {{ cat.label }}
+          </button>
+        </div>
       </div>
 
       <!-- Result count -->
-      <div class="result-info">
-        <span v-if="!loading">{{ filteredItems.length }} menu ditemukan</span>
-        <span v-else>Memuat menu…</span>
+      <div class="px-6 mb-4 flex items-center justify-between">
+        <p class="text-gray-400 text-[11px] font-bold uppercase tracking-wider">
+          <span v-if="!loading">{{ filteredItems.length }} Menu Tersedia</span>
+          <span v-else>Memperbarui daftar...</span>
+        </p>
       </div>
 
       <!-- ── GRID MENU ──────────────────────────────────────── -->
-      <div class="menu-grid px-container">
+      <div class="px-6 grid grid-cols-2 gap-4">
 
         <!-- Skeleton loading -->
         <template v-if="loading">
-          <div v-for="n in 6" :key="n" class="menu-card skeleton-card"></div>
+          <div v-for="n in 6" :key="n" class="aspect-[3/4] bg-white rounded-3xl animate-pulse"></div>
         </template>
 
         <template v-else>
           <div
             v-for="item in filteredItems"
             :key="item.id"
-            class="menu-card"
+            class="menu-card bg-white rounded-[28px] overflow-hidden shadow-card-menu hover:shadow-lg transition-all duration-500 flex flex-col group border-none"
+            @click="addToCart(item)"
           >
-            <div class="card-img-area">
-              <img :src="item.image" :alt="item.name" class="card-img" />
-              <span class="cat-badge">{{ item.category }}</span>
-              <span v-if="item.is_popular" class="popular-badge">🔥</span>
+            <div class="relative aspect-square overflow-hidden">
+               <img :src="item.image" :alt="item.name" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
+               <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
+               <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-tight">
+                 {{ item.category }}
+               </span>
+               <div v-if="item.is_popular" class="absolute top-2 right-2 bg-pink-light p-1.5 rounded-lg shadow-md">
+                 <SparklesIcon class="h-3 w-3 text-primary" />
+               </div>
             </div>
-            <div class="card-body">
-              <h3 class="card-name">{{ item.name }}</h3>
-              <p class="card-desc">{{ item.description }}</p>
-              <div class="card-footer">
-                <div class="card-rating">
-                  <StarIcon class="h-3 w-3 text-yellow-500 fill-current" />
-                  <span>{{ item.rating }}</span>
+            
+            <div class="p-4 flex-1 flex flex-col justify-between relative">
+              <div>
+                <h3 class="text-primary font-bold text-[13px] leading-tight mb-1 truncate">{{ item.name }}</h3>
+                <p class="text-gray-400 text-[10px] line-clamp-1 mb-3">{{ item.description }}</p>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="flex items-center gap-1 mb-0.5">
+                    <StarIconSolid class="h-2.5 w-2.5 text-accent" />
+                    <span class="text-[10px] font-bold text-primary">{{ item.rating }}</span>
+                  </div>
+                  <p class="text-primary font-black text-sm">{{ formatPrice(item.price) }}</p>
                 </div>
-                <div class="card-right">
-                  <p class="card-price">{{ formatPrice(item.price) }}</p>
-                  <button class="add-btn" @click="addToCart(item)">
-                    <PlusIcon class="h-5 w-5" />
-                  </button>
-                </div>
+                <button class="bg-accent w-9 h-9 rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20 group-hover:rotate-90 transition-transform duration-300">
+                  <PlusIcon class="h-5 w-5 text-white" />
+                </button>
               </div>
             </div>
           </div>
 
           <!-- Empty state -->
-          <div v-if="filteredItems.length === 0" class="empty-state">
-            <span class="empty-emoji">😔</span> <!-- Keeping this one or replacing? Replacing for consistency -->
-            <MagnifyingGlassIcon class="h-12 w-12 mx-auto text-gray-300 mb-2" />
-            <p>Tidak ada menu yang cocok</p>
-            <button class="reset-btn" @click="resetFilter">Reset Filter</button>
+          <div v-if="filteredItems.length === 0" class="col-span-2 py-20 text-center">
+            <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-black/5">
+               <MagnifyingGlassIcon class="h-10 w-10 text-gray-200" />
+            </div>
+            <h3 class="text-primary font-bold text-lg">Menu tidak ditemukan</h3>
+            <p class="text-gray-400 text-sm mt-1 px-10">Coba gunakan kata kunci lain atau reset filter kategori.</p>
+            <button class="mt-6 bg-primary text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-primary/30" @click="resetFilter">Reset Filter</button>
           </div>
         </template>
       </div>
 
-      <div style="height: 16px;"></div>
     </div>
 
     <!-- Snack -->
     <transition name="snack">
-      <div v-if="showSnack" class="snackbar">
-        <CheckCircleIcon class="h-5 w-5 inline mr-1" /> ✅ {{ snackMsg }}
+      <div v-if="showSnack" class="snackbar-modern">
+        <div class="flex items-center gap-3">
+           <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+              <CheckCircleIcon class="h-5 w-5 text-accent" />
+           </div>
+           <div>
+             <p class="text-white text-xs font-bold">{{ snackMsg }}</p>
+             <button @click="goToCart" class="text-accent text-[10px] font-bold uppercase tracking-wider">Lihat Keranjang</button>
+           </div>
+        </div>
       </div>
     </transition>
   </AppLayout>
@@ -100,19 +130,19 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useCartStore } from '@/stores/cartStore';
 import { 
   MagnifyingGlassIcon, 
   StarIcon, 
   PlusIcon,
-  Squares2X2Icon,
-  BeakerIcon,
-  CakeIcon,
-  VariableIcon as MugIcon,
-  WrenchScrewdriverIcon as UtensilsIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  XMarkIcon,
+  AdjustmentsHorizontalIcon,
+  SparklesIcon
 } from '@heroicons/vue/24/outline';
+import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
 
 const cartStore = useCartStore();
 const allItems = ref([]);
@@ -124,17 +154,12 @@ const snackMsg = ref('');
 let debounceTimer = null;
 
 const categories = [
-  { id: 'Semua',    label: 'Semua',    icon: Squares2X2Icon },
-  { id: 'Kopi',     label: 'Kopi',     icon: MugIcon },
-  { id: 'Non-Kopi', label: 'Non-Kopi', icon: BeakerIcon },
-  { id: 'Makanan',  label: 'Makanan',  icon: UtensilsIcon },
-  { id: 'Dessert',  label: 'Dessert',  icon: CakeIcon },
+  { id: 'Semua',    label: 'Semua Menu' },
+  { id: 'Kopi',     label: 'Kopi Espresso' },
+  { id: 'Non-Kopi', label: 'Minuman Segar' },
+  { id: 'Makanan',  label: 'Kue & Pastry' },
+  { id: 'Dessert',  label: 'Menu Manis' },
 ];
-
-function getCategoryIcon(cat) {
-  const found = categories.find(c => c.id === cat);
-  return found ? found.icon : Squares2X2Icon;
-}
 
 const filteredItems = computed(() => {
   let items = allItems.value;
@@ -175,9 +200,13 @@ function debouncedFetch() {
 
 function addToCart(item) {
   cartStore.addItem(item);
-  snackMsg.value = `${item.name} ditambahkan!`;
+  snackMsg.value = `${item.name} Berhasil Ditambah!`;
   showSnack.value = true;
-  setTimeout(() => { showSnack.value = false; }, 2000);
+  setTimeout(() => { showSnack.value = false; }, 3000);
+}
+
+function goToCart() {
+  router.visit('/cart');
 }
 
 function formatPrice(price) {
@@ -188,279 +217,24 @@ onMounted(fetchMenu);
 </script>
 
 <style scoped>
-.menu-page {
-  background: #F0EEFF;
-  min-height: 100dvh;
-}
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Top Bar */
-.menu-topbar {
-  background: #ffffff;
-  padding: 52px 16px 16px;
-  border-bottom: 1px solid #F0F0F0;
-}
-
-.menu-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: #7C6BC4;
-  margin: 0 0 14px;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #F7F8FA;
-  border-radius: 16px;
-  padding: 12px 16px;
-  border: 1px solid #E5E7EB;
-}
-
-.search-icon { color: #9CA3AF; flex-shrink: 0; }
-
-.search-input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  font-size: 14px;
-  color: #1B1B1B;
-  outline: none;
-}
-
-.search-input::placeholder { color: #9CA3AF; }
-
-.clear-btn {
-  background: none;
-  border: none;
-  color: #9CA3AF;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 2px 4px;
-}
-
-/* Category Row */
-.category-row {
-  display: flex;
-  gap: 8px;
-  padding: 14px 16px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  background: #ffffff;
-  border-bottom: 1px solid #F3F4F6;
-}
-
-.category-row::-webkit-scrollbar { display: none; }
-
-.cat-pill {
-  padding: 8px 16px;
-  border-radius: 50px;
-  border: 1.5px solid #E5E7EB;
-  background: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
-  color: #4B5563;
-  cursor: pointer;
-  white-space: nowrap;
-  min-height: 38px;
-  transition: all 0.2s ease;
-}
-
-.cat-pill:hover { border-color: #9B8FD4; color: #7C6BC4; }
-
-.cat-pill.active {
-  background: #7C6BC4;
-  border-color: #7C6BC4;
-  color: #ffffff;
-}
-
-/* Result info */
-.result-info {
-  padding: 12px 16px 8px;
-  font-size: 13px;
-  color: #6B7280;
-}
-
-/* Grid */
-.px-container { padding: 0 16px; }
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding-bottom: 8px;
-}
-
-.menu-card {
-  background: #ffffff;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.menu-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
-
-.card-img-area {
-  height: 140px;
-  position: relative;
-}
-
-.card-img {
-  width: 100%;
-  height: 100%;
-  border-radius: 16px;
-  object-fit: cover;
-}
-
-.cat-badge {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  background: rgba(124, 107, 196, 0.85);
-  color: white;
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.popular-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: 16px;
-}
-
-.card-body { padding: 12px 12px 14px; }
-
-.card-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: #1B1B1B;
-  margin: 0 0 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-desc {
-  font-size: 11px;
-  color: #6B7280;
-  margin: 0 0 10px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.4;
-}
-
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card-rating {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 11px;
-  color: #F59E0B;
-  font-weight: 600;
-}
-
-.card-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.card-price {
-  font-size: 12px;
-  font-weight: 700;
-  color: #7C6BC4;
-  margin: 0;
-}
-
-.add-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  background: #7C6BC4;
-  border: none;
-  color: white;
-  font-size: 22px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 3px 8px rgba(124, 107, 196, 0.3);
-}
-
-.add-btn:hover { background: #5A4DA0; transform: scale(1.1); }
-.add-btn:active { transform: scale(0.9); }
-
-/* Skeleton */
-.skeleton-card {
-  height: 220px;
-  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 20px;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* Empty */
-.empty-state {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 40px 0;
-  color: #9CA3AF;
-}
-
-.empty-emoji { font-size: 48px; display: block; margin-bottom: 12px; }
-.empty-state p { margin: 0 0 16px; font-size: 15px; }
-
-.reset-btn {
-  background: #7C6BC4;
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Snack */
-.snackbar {
+.snackbar-modern {
   position: fixed;
   top: 24px;
   left: 50%;
   transform: translateX(-50%);
   background: #1B1B1B;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 999;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  white-space: nowrap;
+  padding: 12px 16px;
+  border-radius: 20px;
+  width: calc(100% - 48px);
+  max-width: 350px;
+  z-index: 1000;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
 }
 
-.snack-enter-active, .snack-leave-active { transition: all 0.3s ease; }
-.snack-enter-from, .snack-leave-to { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+.snack-enter-active, .snack-leave-active { transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.snack-enter-from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+.snack-leave-to { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.9); }
 </style>

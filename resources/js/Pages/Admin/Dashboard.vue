@@ -8,15 +8,15 @@
       </header>
 
       <!-- ── STATS GRID (Always in one grid) ─────────────── -->
-      <div class="stats-grid">
-        <div v-for="stat in statCards" :key="stat.label" class="stat-card">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div v-for="stat in statCards" :key="stat.label" class="stat-card" :class="stat.colorClass">
           <div class="stat-top">
-            <p class="stat-label">{{ stat.label }}</p>
-            <div class="stat-icon-circle" :class="stat.colorClass">
+            <p class="text-xs uppercase font-bold tracking-wider" :class="stat.labelColor">{{ stat.label }}</p>
+            <div class="stat-icon-circle" :class="stat.iconClass">
               <component :is="stat.icon" class="h-5 w-5" />
             </div>
           </div>
-          <p class="stat-value">{{ stat.value }}</p>
+          <p class="text-4xl font-bold mt-2" :class="stat.valueColor">{{ stat.value }}</p>
         </div>
       </div>
 
@@ -31,28 +31,28 @@
           
           <div class="table-outer">
             <table class="data-table">
-              <thead>
+              <thead class="bg-gray-50/50">
                 <tr>
-                  <th>No. Order</th>
-                  <th>Nama</th>
-                  <th class="desktop-only">Meja</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  <th class="desktop-only">Waktu</th>
+                  <th class="text-left py-3 px-4 text-[11px] uppercase tracking-wider font-semibold text-gray-500 border-b border-gray-100">No. Order</th>
+                  <th class="text-left py-3 px-4 text-[11px] uppercase tracking-wider font-semibold text-gray-500 border-b border-gray-100">Nama</th>
+                  <th class="hidden lg:table-cell text-left py-3 px-4 text-[11px] uppercase tracking-wider font-semibold text-gray-500 border-b border-gray-100">Meja</th>
+                  <th class="text-left py-3 px-4 text-[11px] uppercase tracking-wider font-semibold text-gray-500 border-b border-gray-100">Total</th>
+                  <th class="text-left py-3 px-4 text-[11px] uppercase tracking-wider font-semibold text-gray-500 border-b border-gray-100">Status</th>
+                  <th class="hidden lg:table-cell text-left py-3 px-4 text-[11px] uppercase tracking-wider font-semibold text-gray-500 border-b border-gray-100">Waktu</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="order in recentOrders" :key="order.id">
-                  <td class="order-id">#{{ order.id.toString().padStart(3, '0') }}</td>
-                  <td class="cust-name">{{ order.customer_name }}</td>
-                  <td class="desktop-only">{{ order.table_number || '-' }}</td>
-                  <td class="total-bold">{{ formatPrice(order.total_price) }}</td>
-                  <td>
+              <tbody class="divide-y divide-gray-100">
+                <tr v-for="order in recentOrders" :key="order.id" class="hover:bg-gray-50 transition-colors duration-150">
+                  <td class="order-id py-3 px-4">#{{ order.id.toString().padStart(3, '0') }}</td>
+                  <td class="cust-name py-3 px-4">{{ order.customer_name }}</td>
+                  <td class="hidden lg:table-cell py-3 px-4">{{ order.table_number || '-' }}</td>
+                  <td class="total-bold py-3 px-4">{{ formatPrice(order.total_price) }}</td>
+                  <td class="py-3 px-4">
                     <span class="badge" :class="order.payment_status === 'paid' ? 'paid' : 'pending'">
                       {{ order.payment_status === 'paid' ? 'Lunas' : 'Belum Bayar' }}
                     </span>
                   </td>
-                  <td class="desktop-only text-gray-400">{{ formatTime(order.created_at) }}</td>
+                  <td class="hidden lg:table-cell text-gray-400 py-3 px-4">{{ formatTime(order.created_at) }}</td>
                 </tr>
                 <tr v-if="recentOrders.length === 0">
                   <td colspan="6" class="empty-text">Menunggu pesanan pertama...</td>
@@ -129,25 +129,37 @@ const statCards = computed(() => [
     label: 'Total Order', 
     value: props.stats.total_orders, 
     icon: ClipboardDocumentListIcon,
-    colorClass: 'bg-purple-100 text-[#7C6BC4]'
+    colorClass: 'bg-purple-50 border-l-4 border-purple-500',
+    iconClass: 'bg-purple-100 text-purple-600',
+    labelColor: 'text-purple-600/70',
+    valueColor: 'text-purple-900'
   },
   { 
     label: 'Pending', 
     value: props.stats.pending_orders, 
     icon: ClockIcon,
-    colorClass: 'bg-yellow-100 text-yellow-600'
+    colorClass: 'bg-yellow-50 border-l-4 border-yellow-500',
+    iconClass: 'bg-yellow-100 text-yellow-600',
+    labelColor: 'text-yellow-700/70',
+    valueColor: 'text-yellow-900'
   },
   { 
     label: 'Pendapatan', 
     value: formatPrice(props.stats.today_revenue), 
     icon: BanknotesIcon,
-    colorClass: 'bg-green-100 text-green-600'
+    colorClass: 'bg-green-50 border-l-4 border-green-500',
+    iconClass: 'bg-green-100 text-green-600',
+    labelColor: 'text-green-700/70',
+    valueColor: 'text-green-900'
   },
   { 
     label: 'Belum Bayar', 
     value: props.stats.unpaid_orders, 
     icon: ExclamationCircleIcon,
-    colorClass: 'bg-red-100 text-red-600'
+    colorClass: 'bg-red-50 border-l-4 border-red-500',
+    iconClass: 'bg-red-100 text-red-600',
+    labelColor: 'text-red-700/70',
+    valueColor: 'text-red-900'
   }
 ]);
 
@@ -182,30 +194,17 @@ function toggleMenu(id) {
 .current-time { font-size: 0.875rem; color: #6B7280; font-weight: 500; }
 
 @media (min-width: 1024px) {
-  .greeting { font-size: 1.875rem; } /* text-3xl approx, but user asked for 2xl/3xl mix */
-  .greeting { font-size: 1.5rem; } /* text-2xl as per prompt */
+  .greeting { font-size: 1.25rem; }
 }
 
 /* ── STATS GRID ──────────── */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-@media (min-width: 1024px) {
-  .stats-grid { 
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
+/* Grid classes replaced via Tailwind */
 
 .stat-card {
-  background: white;
   padding: 16px; /* p-4 */
   border-radius: 1.25rem; /* rounded-2xl */
   box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* shadow-sm */
-  min-height: 110px;
+  min-height: 120px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -227,19 +226,7 @@ function toggleMenu(id) {
   flex-shrink: 0;
 }
 
-.stat-label { font-size: 0.75rem; color: #6B7280; font-weight: 600; }
-
-.stat-value { 
-  font-size: 1.5rem; /* text-2xl */
-  font-weight: 800; 
-  color: #1B1B1B; 
-  margin: 0; 
-  line-height: 1;
-}
-
-@media (min-width: 1024px) {
-  .stat-value { font-size: 1.5rem; } /* stay 2xl as per user prompt for cards? actually prompt said text-2xl font-bold mt-2 */
-}
+/* Stat specific utilities eliminated, injected via tailwind in template */
 
 /* ── SECTIONS ──────────────── */
 .sections-container { display: flex; flex-direction: column; gap: 24px; }
@@ -262,26 +249,13 @@ function toggleMenu(id) {
 .btn-all { font-size: 13px; font-weight: 700; color: #7C6BC4; text-decoration: none; }
 
 /* ── TABLE ──────────────────── */
-.table-outer { width: 100%; border-radius: 12px; }
-
-@media (max-width: 1023px) {
-  .table-outer { overflow-x: auto; }
-}
+.table-outer { width: 100%; border-radius: 12px; overflow-x: auto; }
 
 .data-table { width: 100%; border-collapse: collapse; min-width: 500px; }
 @media (max-width: 640px) { .data-table { min-width: 450px; } }
 
-.data-table th { 
-  text-align: left; 
-  padding: 12px 16px; 
-  font-size: 11px; 
-  font-weight: 800; 
-  color: #9CA3AF; 
-  text-transform: uppercase; 
-  border-bottom: 1px solid #F3F4F6; 
-}
-
-.data-table td { padding: 14px 16px; font-size: 13px; color: #374151; border-bottom: 1px solid #F9FAFB; }
+/* Table cell layout now mapped to tailwind classes in template */
+.data-table td { font-size: 13px; color: #374151; }
 
 .order-id { font-weight: 700; color: #7C6BC4; }
 .cust-name { font-weight: 600; }
@@ -291,8 +265,7 @@ function toggleMenu(id) {
 .badge.paid { background: #DCFCE7; color: #166534; }
 .badge.pending { background: #FEF3C7; color: #92400E; }
 
-.desktop-only { display: none; }
-@media (min-width: 768px) { .desktop-only { display: table-cell; } }
+/* table cell display handled by Tailwind classes hidden lg:table-cell */
 
 /* ── UNAVAILABLE MENUS ───────── */
 .unavailable-scroll { overflow-x: auto; padding-bottom: 8px; }

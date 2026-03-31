@@ -1,12 +1,14 @@
 <template>
-  <div class="app-shell">
-    <!-- Page Content -->
-    <main class="page-content" :class="{ 'has-cart-bar': cartStore.totalItems > 0 && showBottomNav }">
-      <slot />
-    </main>
+  <div class="app-shell bg-gray-100 min-h-screen">
+    <Head :title="title" />
+    <div class="max-w-lg mx-auto bg-white min-h-screen shadow-xl relative flex flex-col overflow-hidden">
+      <!-- Page Content -->
+      <main class="page-content flex-1 overflow-y-auto" :class="{ 'has-cart-bar': cartStore.totalItems > 0 && showBottomNav }">
+        <slot />
+      </main>
 
     <!-- Floating Cart Button -->
-    <transition name="cart-float">
+    <transition name="cart-bounce">
       <div
         v-if="cartStore.totalItems > 0 && showBottomNav"
         class="floating-cart"
@@ -38,26 +40,38 @@
           />
         </span>
         <span class="nav-label">{{ tab.label }}</span>
+        <div v-if="isActive(tab.href)" class="nav-indicator"></div>
       </button>
     </nav>
+    </div>
   </div>
 </template>
 
+<script>
+export default {
+  inheritAttrs: false
+};
+</script>
+
 <script setup>
-import { computed } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { computed, watch } from 'vue';
+import { router, usePage, Head } from '@inertiajs/vue3';
 import { useCartStore } from '@/stores/cartStore';
+
+const props = defineProps({
+  title: String,
+});
 import { 
   HomeIcon as HomeIconOutline, 
-  Bars3Icon as MenuIconOutline, 
-  ClipboardDocumentListIcon as OrderIconOutline, 
-  UserIcon as ProfilIconOutline 
+  QueueListIcon as MenuIconOutline, 
+  TicketIcon as OrderIconOutline, 
+  UserCircleIcon as ProfilIconOutline 
 } from '@heroicons/vue/24/outline';
 import { 
   HomeIcon as HomeIconSolid, 
-  Bars3Icon as MenuIconSolid, 
-  ClipboardDocumentListIcon as OrderIconSolid, 
-  UserIcon as ProfilIconSolid 
+  QueueListIcon as MenuIconSolid, 
+  TicketIcon as OrderIconSolid, 
+  UserCircleIcon as ProfilIconSolid 
 } from '@heroicons/vue/24/solid';
 
 const cartStore = useCartStore();
@@ -71,7 +85,7 @@ const tabs = [
 ];
 
 const showBottomNav = computed(() => {
-  const hidden = ['/cart', '/order/'];
+  const hidden = ['/cart', '/order-status']; // Adjusted paths if needed
   return !hidden.some(p => page.url.startsWith(p));
 });
 
@@ -102,113 +116,98 @@ function formatPrice(price) {
 
 .page-content {
   flex: 1;
-  padding-bottom: 72px;
+  padding-bottom: 84px; /* More space for the new bottom nav */
 }
 
 .page-content.has-cart-bar {
-  padding-bottom: 140px;
+  padding-bottom: 160px;
 }
 
 /* Bottom Nav */
 .bottom-nav {
-  position: fixed;
+  position: absolute; /* Stick to bottom of container, not screen */
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
   width: 100%;
-  max-width: 430px;
-  height: 72px;
+  height: 84px;
   background: #ffffff;
-  border-top: 1px solid #F0F0F0;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 8px;
-  z-index: 50;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  padding: 0 12px 12px;
+  z-index: 100;
+  border-top: 1px solid #E8E6FF;
+  border-radius: 24px 24px 0 0;
 }
 
 .nav-tab {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 16px;
+  gap: 4px;
+  padding: 10px 12px;
   border: none;
   background: none;
   cursor: pointer;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  min-width: 56px;
-  min-height: 44px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: #9CA3AF;
+  position: relative;
 }
 
-.nav-tab:hover { background: #F8F9FA; }
-
 .nav-tab.active {
-  color: #7C6BC4;
+  color: #6367FF;
 }
 
 .nav-icon {
-  font-size: 20px;
-  line-height: 1;
-  display: block;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .nav-tab.active .nav-icon {
-  transform: scale(1.15);
+  transform: translateY(-2px) scale(1.1);
 }
 
 .nav-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.2px;
 }
 
 .nav-tab.active .nav-label {
   font-weight: 700;
 }
 
-/* Active indicator dot */
-.nav-tab.active::after {
-  content: '';
-  display: block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #7C6BC4;
+.nav-indicator {
   position: absolute;
-  bottom: 8px;
+  bottom: 4px;
+  width: 5px;
+  height: 5px;
+  background: #6367FF;
+  border-radius: 50%;
+  animation: dot-scale 0.3s forwards;
 }
 
-.nav-tab { position: relative; }
+@keyframes dot-scale {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 
 /* Floating Cart */
 .floating-cart {
-  position: fixed;
-  bottom: 80px;
+  position: absolute;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 398px;
-  background: #5A4DA0;
-  border-radius: 16px;
-  padding: 14px 20px;
+  width: calc(100% - 40px);
+  background: linear-gradient(135deg, #6367FF, #8494FF);
+  border-radius: 20px;
+  padding: 16px 24px;
   cursor: pointer;
-  z-index: 49;
-  box-shadow: 0 8px 24px rgba(90, 77, 160, 0.35);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.floating-cart:hover {
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 12px 28px rgba(90, 77, 160, 0.45);
+  z-index: 99;
+  box-shadow: 0 10px 30px rgba(99, 103, 255, 0.35);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .floating-cart:active {
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) scale(0.97);
 }
 
 .cart-float-inner {
@@ -220,43 +219,56 @@ function formatPrice(price) {
 .cart-float-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .cart-badge {
-  background: #9B8FD4;
-  color: white;
-  font-size: 12px;
-  font-weight: 700;
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
+  background: #ffffff;
+  color: #6367FF;
+  font-size: 13px;
+  font-weight: 800;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 10px rgba(99, 103, 255, 0.25);
+  animation: bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.5); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 .cart-float-label {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .cart-float-price {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 /* Transitions */
-.cart-float-enter-active,
-.cart-float-leave-active {
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+.cart-bounce-enter-active {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cart-bounce-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.cart-float-enter-from,
-.cart-float-leave-to {
+.cart-bounce-enter-from {
   opacity: 0;
-  transform: translateX(-50%) translateY(20px);
+  transform: translateX(-50%) translateY(30px);
+}
+.cart-bounce-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(30px) scale(0.9);
 }
 </style>

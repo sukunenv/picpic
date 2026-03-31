@@ -1,193 +1,229 @@
 <template>
-  <div class="cart-page">
+  <AppLayout>
+    <div class="cart-page min-h-screen bg-gray-50 pb-28">
 
-    <!-- ── BACK HEADER ───────────────────────────────────── -->
-    <div class="cart-header">
-      <button class="back-btn" @click="goBack">
-        <ChevronLeftIcon class="h-6 w-6" />
-      </button>
-      <h1 class="cart-title">Keranjang</h1>
+      <!-- ── BACK HEADER ───────────────────────────────────── -->
+    <div class="sticky top-0 z-40 bg-white/80 backdrop-blur-md px-6 pt-12 pb-4 shadow-sm flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 transition-colors hover:bg-gray-100" @click="goBack">
+          <ChevronLeftIcon class="h-6 w-6 text-primary" />
+        </button>
+        <h1 class="text-primary text-xl font-semibold">Keranjang</h1>
+      </div>
       <button
         v-if="cartStore.items.length > 0"
-        class="clear-all-btn"
+        class="text-accent text-xs font-bold uppercase tracking-wide bg-accent/10 px-3 py-1.5 rounded-full"
         @click="confirmClear"
       >
-        <TrashIcon class="h-4 w-4 inline mr-1" /> Hapus semua
+        Hapus Semua
       </button>
-      <div v-else style="width:80px;"></div>
     </div>
 
     <!-- ── EMPTY CART ─────────────────────────────────────── -->
-    <div v-if="cartStore.items.length === 0" class="empty-cart">
-      <div class="empty-illustration">
-        <ShoppingCartIcon class="h-20 w-20 text-gray-300 mx-auto" />
+    <div v-if="cartStore.items.length === 0" class="flex flex-col items-center justify-center px-8 py-32 text-center">
+      <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-xl shadow-black/5 mb-6">
+        <ShoppingCartIcon class="h-16 w-16 text-gray-200" />
       </div>
-      <h2 class="empty-title">Keranjang Kosong</h2>
-      <p class="empty-desc">Belum ada item yang ditambahkan.<br>Yuk pilih menu dulu!</p>
-      <button class="browse-btn" @click="goToMenu">Lihat Menu</button>
+      <h2 class="text-primary text-2xl font-bold mb-2">Keranjang Kosong</h2>
+      <p class="text-gray-400 text-sm mb-8 leading-relaxed">Sepertinya kamu belum memilih minuman.<br>Yuk, eksplor menu kami!</p>
+      <button class="bg-primary text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-primary/30 w-full max-w-xs transition-transform active:scale-95" @click="goToMenu">
+        Lihat Menu Sekarang
+      </button>
     </div>
 
     <!-- ── CART CONTENT ───────────────────────────────────── -->
-    <div v-else class="cart-content">
+    <div v-else class="px-6 mt-6">
 
       <!-- Cart Items -->
-      <div class="px-container">
+      <div class="space-y-4 mb-8">
         <div
           v-for="item in cartStore.items"
           :key="item.id"
-          class="cart-item"
+          class="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 flex gap-4 pr-3"
         >
-          <div class="item-img-wrap">
-            <img :src="item.image" :alt="item.name" class="item-img" />
-          </div>
-          <div class="item-info">
-            <p class="item-name">{{ item.name }}</p>
-            <p class="item-price">{{ formatPrice(item.price) }}</p>
-            <!-- Note input -->
-            <div class="note-wrap">
-              <PencilSquareIcon class="h-3 w-3 text-gray-400 absolute left-2 top-2.5" />
-              <input
-                v-model="item.note"
-                type="text"
-                placeholder="Tambah catatan…"
-                class="note-input pl-6"
-                @change="cartStore.updateNote(item.id, item.note)"
-              />
-            </div>
-          </div>
-          <div class="item-actions">
-            <button class="delete-btn" @click="cartStore.removeItem(item.id)">
-              <TrashIcon class="h-4 w-4" />
-            </button>
-            <div class="qty-control">
-              <button class="qty-btn minus" @click="cartStore.decreaseQty(item.id)">
-                <MinusIcon class="h-4 w-4" />
-              </button>
-              <span class="qty-num">{{ item.quantity }}</span>
-              <button class="qty-btn plus" @click="cartStore.increaseQty(item.id)">
-                <PlusIcon class="h-4 w-4" />
+          <img :src="item.image" :alt="item.name" class="w-20 h-20 rounded-[18px] object-cover flex-shrink-0" />
+          <div class="flex-1 flex flex-col justify-between py-0.5">
+            <div class="flex items-start justify-between">
+              <div>
+                <h3 class="text-primary font-bold text-sm leading-tight pr-4">{{ item.name }}</h3>
+                <p class="text-primary font-black text-sm mt-1">{{ formatPrice(item.price) }}</p>
+              </div>
+              <button class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500 hover:bg-red-100 transition-colors" @click="cartStore.removeItem(item.id)">
+                <TrashIcon class="h-4 w-4" />
               </button>
             </div>
-            <p class="item-subtotal">{{ formatPrice(item.price * item.quantity) }}</p>
+            
+            <div class="flex items-center justify-between mt-3">
+              <!-- Note input -->
+              <div class="relative w-3/5">
+                <PencilSquareIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+                <input
+                  v-model="item.note"
+                  type="text"
+                  placeholder="Catatan..."
+                  class="w-full bg-gray-50 border-none rounded-xl py-1.5 pl-7 pr-3 text-[11px] text-primary placeholder:text-gray-400 focus:ring-1 focus:ring-accent"
+                  @change="cartStore.updateNote(item.id, item.note)"
+                />
+              </div>
+              
+              <!-- Qty Control -->
+              <div class="flex items-center bg-gray-50 rounded-xl p-1 gap-1 border border-gray-100/50">
+                <button class="w-7 h-7 bg-white rounded-lg flex items-center justify-center shadow-sm text-gray-600 active:scale-90 transition-transform" @click="cartStore.decreaseQty(item.id)">
+                  <MinusIcon class="h-3 w-3" />
+                </button>
+                <span class="w-6 text-center text-xs font-bold text-primary">{{ item.quantity }}</span>
+                <button class="w-7 h-7 bg-primary rounded-lg flex items-center justify-center shadow-sm text-white active:scale-90 transition-transform" @click="cartStore.increaseQty(item.id)">
+                  <PlusIcon class="h-3 w-3" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- ── INFORMASI ORDER ─────────────────────────────── -->
-      <div class="px-container">
-        <div class="info-section">
-          <h3 class="info-title">
-            <IdentificationIcon class="h-5 w-5 inline mr-1.5 text-[#7C6BC4]" /> 
-            Informasi Pemesanan
-          </h3>
-          <div class="form-group">
-            <label class="form-label">Nama Pemesan *</label>
-            <input
-              v-model="form.customerName"
-              type="text"
-              placeholder="Masukkan nama kamu"
-              class="form-input"
-              :class="{ error: errors.customerName }"
-            />
-            <p v-if="errors.customerName" class="error-msg">{{ errors.customerName }}</p>
+      <div class="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+        <h3 class="text-primary font-bold text-[15px] mb-4 flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+             <IdentificationIcon class="h-4 w-4 text-accent" /> 
           </div>
-          <div class="form-group">
-            <label class="form-label">Nomor Meja</label>
-            <input
-              v-model="form.tableNumber"
-              type="text"
-              placeholder="Contoh: Meja 5 / Takeaway"
-              class="form-input"
+          Detail Pemesanan
+        </h3>
+        
+        <div class="space-y-5">
+          <!-- Nama Pelanggan -->
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Atas Nama *</label>
+            <input 
+              type="text" 
+              v-model="customer_name" 
+              class="w-full px-4 py-3.5 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-accent/20 transition-all font-medium" 
+              placeholder="Masukkan nama Anda"
+              :class="{ 'ring-2 ring-red-400': errors.customerName }"
+              required
             />
+            <p v-if="errors.customerName" class="text-red-500 text-[11px] mt-1 ml-2 font-medium">{{ errors.customerName }}</p>
+          </div>
+
+          <!-- Nomor Meja -->
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Nomor Meja *</label>
+            <input 
+              type="text" 
+              v-model="table_number" 
+              class="w-full px-4 py-3.5 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-accent/20 transition-all font-medium" 
+              placeholder="Contoh: 05"
+              required
+            />
+          </div>
+
+          <!-- Kontak WhatsApp -->
+          <div class="pt-2">
+            <label class="block text-sm font-medium text-gray-600 mb-2">Nomor WhatsApp (Opsional)</label>
+            <div class="relative group">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span class="text-gray-400 font-bold text-sm">+62</span>
+              </div>
+              <input 
+                type="tel" 
+                v-model="customer_phone" 
+                class="w-full pl-12 pr-4 py-3.5 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-accent/20 transition-all font-medium" 
+                placeholder="8xxxxxxxxxx"
+              />
+            </div>
+            <p class="text-xs text-gray-400 mt-2 ml-1">Untuk menerima struk digital dan status pesanan via WA</p>
           </div>
         </div>
       </div>
 
       <!-- ── RINGKASAN ───────────────────────────────────── -->
-      <div class="px-container">
-        <div class="summary-section">
-          <div class="summary-row">
+      <div class="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 mb-8">
+        <h3 class="text-primary font-bold text-[15px] mb-4">Ringkasan Biaya</h3>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between text-gray-500">
             <span>Subtotal ({{ cartStore.totalItems }} item)</span>
-            <span>{{ formatPrice(cartStore.totalPrice) }}</span>
+            <span class="font-medium text-primary">{{ formatPrice(cartStore.totalPrice) }}</span>
           </div>
-          <div class="summary-row">
-            <span>Biaya layanan</span>
-            <span class="free-badge">Gratis</span>
+          <div class="flex justify-between text-gray-500">
+            <span>Biaya Layanan</span>
+            <span class="bg-primary/10 text-primary text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Gratis</span>
           </div>
-          <div class="summary-divider"></div>
-          <div class="summary-row total">
-            <span>Total</span>
-            <span class="total-price">{{ formatPrice(cartStore.totalPrice) }}</span>
+          <div class="border-t border-dashed border-gray-200 mt-2 mb-1"></div>
+          <div class="flex justify-between items-center">
+            <span class="text-primary font-semibold text-sm">Total Pembayaran</span>
+            <span class="text-xl font-semibold text-[#6367FF]">{{ formatPrice(cartStore.totalPrice) }}</span>
           </div>
         </div>
       </div>
 
       <!-- ── ACTION BUTTONS ──────────────────────────────── -->
-      <div class="px-container action-section">
+      <div class="space-y-3">
         <button
-          class="btn-pay-now"
+          class="w-full bg-primary text-white font-bold text-[15px] py-4 rounded-2xl shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] disabled:opacity-70"
           :disabled="submitting"
           @click="showQrisModal = true"
         >
-          <QrCodeIcon class="h-5 w-5 inline mr-1" /> Bayar Sekarang via QRIS
+          <QrCodeIcon class="h-5 w-5" /> Bayar Sekarang (QRIS)
         </button>
         
-        <div class="pay-later-wrap">
-          <button
-            class="btn-pay-later"
-            :disabled="submitting"
-            @click="submitOrder('cash', 'unpaid')"
-          >
-            <BanknotesIcon class="h-5 w-5 inline mr-1" /> Bayar di Kasir
-          </button>
-          <p class="pay-later-note">Bayar cash/QRIS saat mau pulang</p>
-        </div>
+        <button
+          class="w-full bg-transparent border-2 border-primary text-primary font-bold text-[15px] py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors hover:bg-gray-50 active:scale-[0.98] disabled:opacity-70"
+          :disabled="submitting"
+          @click="submitOrder('cash', 'unpaid')"
+        >
+          <BanknotesIcon class="h-5 w-5" /> Bayar Nanti di Kasir
+        </button>
       </div>
 
       <!-- ── QRIS MODAL ────────────────────────────────────── -->
       <transition name="modal">
-        <div v-if="showQrisModal" class="modal-overlay" @click.self="showQrisModal = false">
-          <div class="qris-modal">
-            <div class="qris-header">
-              <h3>Pembayaran QRIS</h3>
-              <button class="close-modal" @click="showQrisModal = false">×</button>
-            </div>
-            
-            <div class="qris-content">
-              <div class="qris-img-container">
-                <img src="/qris_dummy.png" alt="QRIS Dummy" class="qris-img" />
+        <div v-if="showQrisModal" class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-primary/40 backdrop-blur-sm" @click.self="showQrisModal = false">
+          <div class="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl modal-content">
+            <div class="p-6 text-center">
+              <div class="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <QrCodeIcon class="h-6 w-6 text-accent" />
               </div>
-              <div class="qris-nominal">
-                <p class="nom-label">Total Bayar</p>
-                <p class="nom-val">{{ formatPrice(cartStore.totalPrice) }}</p>
+              <h3 class="text-primary font-bold text-xl mb-1">Scan QRIS untuk Bayar</h3>
+              <p class="text-primary/70 text-sm mb-6">Scan dengan m-banking atau e-wallet apapun</p>
+              
+              <div class="bg-gray-50 p-4 rounded-3xl mb-6 border-2 border-gray-100 flex justify-center">
+                <img src="/qris.png" alt="QRIS" class="w-full max-w-[280px] object-contain rounded-xl bg-white p-2" />
               </div>
-              <p class="qris-instr">
-                Scan QR ini dengan aplikasi bank atau e-wallet kamu
+              
+              <div class="mb-4">
+                <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total: {{ formatPrice(cartStore.totalPrice) }}</p>
+              </div>
+
+              <p class="text-[11px] font-semibold text-gray-500 mb-6 flex justify-center flex-wrap gap-1">
+                <span>GoPay</span> &bull; <span>OVO</span> &bull; <span>Dana</span> &bull; <span>ShopeePay</span> &bull; <span>Semua Bank</span>
               </p>
-            </div>
-            
-            <div class="qris-footer">
-              <button 
-                class="btn-confirm-pay" 
-                :disabled="submitting"
-                @click="submitOrder('qris', 'paid')"
-              >
-                {{ submitting ? '⏳ Memproses…' : 'Konfirmasi Sudah Bayar' }}
-              </button>
-              <button class="btn-cancel-pay" @click="showQrisModal = false">Batal</button>
+              
+              <div class="space-y-3">
+                <button 
+                  class="w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/30 disabled:opacity-70 transition-transform active:scale-[0.98]"
+                  :disabled="submitting"
+                  @click="submitOrder('qris', 'paid')"
+                >
+                  {{ submitting ? 'Memproses...' : 'Konfirmasi Sudah Bayar' }}
+                </button>
+                <button class="w-full bg-transparent border-2 border-primary text-primary hover:bg-gray-50 transition-colors font-bold py-3.5 rounded-2xl" @click="showQrisModal = false">
+                  Batal
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </transition>
 
-      <div style="height: 20px;"></div>
+      </div>
     </div>
-  </div>
+  </AppLayout>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue';
 import { router } from '@inertiajs/vue3';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { useCartStore } from '@/stores/cartStore';
 import { 
   ChevronLeftIcon, 
@@ -197,33 +233,25 @@ import {
   PlusIcon,
   PencilSquareIcon,
   IdentificationIcon,
-  CreditCardIcon,
   QrCodeIcon,
   BanknotesIcon,
-  DocumentTextIcon,
-  HandRaisedIcon,
-  Squares2X2Icon,
-  BeakerIcon,
-  CakeIcon,
-  VariableIcon as MugIcon,
-  WrenchScrewdriverIcon as UtensilsIcon
+  CheckCircleIcon
 } from '@heroicons/vue/24/outline';
 
 const cartStore = useCartStore();
 const submitting = ref(false);
 const showQrisModal = ref(false);
 
-const form = reactive({
-  customerName: '',
-  tableNumber: '',
-});
+const customer_name = ref('');
+const table_number = ref('');
+const customer_phone = ref('');
+const payment_method = ref('qris');
 
 const errors = reactive({ customerName: '' });
 
-
 function validate() {
   errors.customerName = '';
-  if (!form.customerName.trim()) {
+  if (!customer_name.value.trim()) {
     errors.customerName = 'Nama pemesan wajib diisi';
     return false;
   }
@@ -231,11 +259,17 @@ function validate() {
 }
 
 async function submitOrder(method, status) {
-  if (!validate()) return;
+  if (!validate()) {
+    showQrisModal.value = false;
+    // Scroll to top slowly to show the error
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
   
-  const payload = {
-    customer_name: form.customerName,
-    table_number: form.tableNumber || null,
+  const orderData = {
+    customer_name: customer_name.value,
+    customer_phone: customer_phone.value,
+    table_number: table_number.value || null,
     payment_method: method,
     payment_status: status,
     items: cartStore.items.map(i => ({
@@ -245,7 +279,7 @@ async function submitOrder(method, status) {
     })),
   };
 
-  router.post('/cart/checkout', payload, {
+  router.post('/cart/checkout', orderData, {
     onStart: () => { submitting.value = true; },
     onFinish: () => { 
       submitting.value = false;
@@ -261,7 +295,7 @@ async function submitOrder(method, status) {
 }
 
 function confirmClear() {
-  if (confirm('Hapus semua item di keranjang?')) {
+  if (confirm('Hapus semua item pesanan?')) {
     cartStore.clearCart();
   }
 }
@@ -276,481 +310,31 @@ function formatPrice(price) {
 
 <style scoped>
 .cart-page {
-  background: #F0EEFF;
+  background: var(--background);
   min-height: 100dvh;
 }
 
-/* Header */
-.cart-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 52px 16px 16px;
-  background: #ffffff;
-  border-bottom: 1px solid #F0F0F0;
+/* Modal Transitions */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.back-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1.5px solid #E5E7EB;
-  background: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1B1B1B;
-  transition: all 0.2s;
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
 }
 
-.back-btn:hover { background: #F3F4F6; }
-
-.cart-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: #1B1B1B;
-  margin: 0;
+.modal-enter-active .modal-content,
+.modal-leave-active .modal-content {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.clear-all-btn {
-  font-size: 13px;
-  color: #EF4444;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 8px;
+.modal-enter-from .modal-content {
+  transform: scale(0.95) translateY(10px);
 }
 
-/* Empty */
-.empty-cart {
-  text-align: center;
-  padding: 80px 32px;
+.modal-leave-to .modal-content {
+  transform: scale(0.95) translateY(10px);
 }
-
-.empty-icon { font-size: 72px; display: block; margin-bottom: 16px; }
-.empty-title { font-size: 20px; font-weight: 700; color: #1B1B1B; margin: 0 0 8px; }
-.empty-desc { font-size: 14px; color: #6B7280; margin: 0 0 24px; line-height: 1.6; }
-
-.browse-btn {
-  background: #7C6BC4;
-  color: white;
-  border: none;
-  padding: 13px 32px;
-  border-radius: 14px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.browse-btn:hover { background: #5A4DA0; }
-
-/* Content */
-.cart-content { padding-top: 16px; }
-.px-container { padding: 0 16px; }
-
-/* Cart Item */
-.cart-item {
-  display: flex;
-  gap: 12px;
-  background: white;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.item-img-wrap {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.item-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.item-info { flex: 1; min-width: 0; }
-
-.item-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1B1B1B;
-  margin: 0 0 4px;
-}
-
-.item-price {
-  font-size: 13px;
-  color: #6B7280;
-  margin: 0 0 8px;
-}
-
-.note-input {
-  width: 100%;
-  border: 1.5px solid #E5E7EB;
-  border-radius: 10px;
-  padding: 7px 10px;
-  font-size: 12px;
-  color: #1B1B1B;
-  outline: none;
-  background: #F9FAFB;
-  transition: border-color 0.2s;
-}
-
-.note-input:focus { border-color: #7C6BC4; background: white; }
-.note-input::placeholder { color: #9CA3AF; }
-
-.item-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.delete-btn {
-  background: #FEF2F2;
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  color: #EF4444;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-
-.delete-btn:hover { background: #FEE2E2; }
-
-.qty-control {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #F3F4F6;
-  border-radius: 12px;
-  padding: 4px 8px;
-}
-
-.qty-btn {
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  min-height: 28px;
-}
-
-.qty-btn.minus { background: #E5E7EB; color: #374151; }
-.qty-btn.minus:hover { background: #D1D5DB; }
-.qty-btn.plus { background: #7C6BC4; color: white; }
-.qty-btn.plus:hover { background: #5A4DA0; }
-.qty-btn:active { transform: scale(0.9); }
-
-.qty-num {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1B1B1B;
-  min-width: 20px;
-  text-align: center;
-}
-
-.item-subtotal {
-  font-size: 13px;
-  font-weight: 700;
-  color: #7C6BC4;
-  margin: 0;
-}
-
-/* Sections */
-.info-section {
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
-  margin-top: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.info-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1B1B1B;
-  margin: 0 0 14px;
-}
-
-.form-group { margin-bottom: 12px; }
-
-.form-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 6px;
-}
-
-.form-input {
-  width: 100%;
-  border: 1.5px solid #E5E7EB;
-  border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 14px;
-  color: #1B1B1B;
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
-  background: #F9FAFB;
-}
-
-.form-input:focus { border-color: #7C6BC4; background: white; }
-.form-input.error { border-color: #EF4444; }
-.error-msg { font-size: 12px; color: #EF4444; margin: 4px 0 0; }
-
-/* Payment */
-.payment-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.payment-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  border: 2px solid #E5E7EB;
-  border-radius: 14px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 13px;
-  font-weight: 500;
-  color: #374151;
-  min-height: 48px;
-}
-
-.payment-btn:hover { border-color: #9B8FD4; }
-
-.payment-btn.active {
-  border-color: #7C6BC4;
-  background: #F0EEFF;
-  color: #7C6BC4;
-  font-weight: 700;
-}
-
-.pay-icon { font-size: 18px; }
-
-/* Summary */
-.summary-section {
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
-  margin-top: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  color: #374151;
-  padding: 6px 0;
-}
-
-.free-badge {
-  background: #EDE9FE;
-  color: #5B21B6;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: 20px;
-}
-
-.summary-divider {
-  height: 1px;
-  background: #F0F0F0;
-  margin: 8px 0;
-}
-
-.summary-row.total {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1B1B1B;
-}
-
-.total-price { color: #7C6BC4; font-size: 18px; }
-
-/* Buttons */
-.action-section { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
-
-.btn-pay-now {
-  width: 100%;
-  padding: 16px;
-  border-radius: 16px;
-  background: #7C6BC4;
-  border: none;
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  min-height: 54px;
-  transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(124, 107, 196, 0.35);
-}
-
-.btn-pay-now:hover { background: #5A4DA0; transform: translateY(-1px); }
-.btn-pay-now:active { transform: translateY(0); }
-.btn-pay-now:disabled { opacity: 0.7; cursor: not-allowed; }
-
-.pay-later-wrap {
-  text-align: center;
-}
-
-.btn-pay-later {
-  width: 100%;
-  padding: 16px;
-  border-radius: 16px;
-  background: transparent;
-  border: 2px solid #7C6BC4;
-  color: #7C6BC4;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  min-height: 54px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-pay-later:hover { background: #F0EEFF; }
-.btn-pay-later:disabled { opacity: 0.7; cursor: not-allowed; }
-
-.pay-later-note {
-  font-size: 11px;
-  color: #6B7280;
-  margin-top: 6px;
-  font-weight: 500;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.qris-modal {
-  background: white;
-  width: 100%;
-  max-width: 360px;
-  border-radius: 24px;
-  overflow: hidden;
-  animation: modalScale 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-}
-
-@keyframes modalScale {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.qris-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid #F3F4F6;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.qris-header h3 { margin: 0; font-size: 16px; font-weight: 800; color: #1B1B1B; }
-
-.close-modal {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #9CA3AF;
-  cursor: pointer;
-}
-
-.qris-content {
-  padding: 24px 20px;
-  text-align: center;
-}
-
-.qris-img-container {
-  width: 180px;
-  height: 180px;
-  margin: 0 auto 16px;
-  background: #F9FAFB;
-  padding: 10px;
-  border-radius: 16px;
-  border: 4px solid #F3F4F6;
-}
-
-.qris-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.qris-nominal { margin-bottom: 16px; }
-.nom-label { font-size: 12px; color: #6B7280; margin: 0; }
-.nom-val { font-size: 24px; font-weight: 800; color: #7C6BC4; margin: 0; }
-
-.qris-instr { font-size: 13px; color: #374151; margin: 0; line-height: 1.5; font-weight: 500; }
-
-.qris-footer {
-  padding: 16px 20px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.btn-confirm-pay {
-  background: #10B981;
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-confirm-pay:disabled { opacity: 0.7; cursor: not-allowed; }
-
-.btn-cancel-pay {
-  background: #F3F4F6;
-  color: #6B7280;
-  border: none;
-  padding: 12px;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Transitions */
-.modal-enter-active, .modal-leave-active { transition: opacity 0.3s; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
 </style>

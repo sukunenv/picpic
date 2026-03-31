@@ -1,39 +1,47 @@
 <template>
   <AppLayout>
-    <div class="orders-page">
+    <div class="min-h-screen bg-gray-50 pb-28">
+
       <!-- Header -->
-      <div class="orders-header">
-        <h1 class="orders-title">Pesanan Saya</h1>
-        <p class="orders-subtitle">Pantau status pesanan kopimu di sini</p>
+      <div class="bg-primary px-6 pt-12 pb-8 rounded-b-[32px]">
+        <h1 class="text-white text-2xl font-bold mb-1">Pesanan Saya</h1>
+        <p class="text-white/60 text-sm font-medium">Pantau status pesanan kopimu</p>
       </div>
 
-      <!-- Tabs (Optional: Aktif vs Selesai) -->
-      <div class="orders-tabs px-container">
+      <!-- Tabs -->
+      <div class="flex gap-3 px-6 mt-6 mb-6">
         <button 
           v-for="t in ['Aktif', 'Selesai']" 
           :key="t" 
-          class="tab-btn" 
-          :class="{ active: activeTab === t }"
+          class="flex-1 py-3 rounded-2xl text-sm font-bold transition-all duration-300 border"
+          :class="activeTab === t 
+            ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
+            : 'bg-white border-gray-100 text-gray-400'"
           @click="activeTab = t"
         >
           {{ t }}
         </button>
       </div>
 
-      <!-- Empty State / Placeholder -->
-      <div class="orders-list px-container">
-        <div class="empty-state">
-          <div class="empty-illustration">
-            <ClipboardDocumentListIcon class="h-20 w-20 text-gray-300 mx-auto" />
+      <!-- Empty State -->
+      <div class="px-6">
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+          <div class="w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-xl shadow-black/5 mb-6">
+            <TicketIcon class="h-14 w-14 text-gray-200" />
           </div>
-          <h2 class="empty-title">Belum ada pesanan aktif</h2>
-          <p class="empty-desc">Sepertinya kamu belum memesan apa-apa. Mari jelajahi menu kami!</p>
-          <button class="menu-btn" @click="goToMenu">Jelajahi Menu</button>
+          <h2 class="text-primary text-xl font-bold mb-2">Belum Ada Pesanan</h2>
+          <p class="text-gray-400 text-sm mb-8 leading-relaxed px-8">
+            Sepertinya kamu belum memesan apa-apa.<br>Yuk, coba minuman spesial kami!
+          </p>
+          <button 
+            class="bg-primary text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-primary/30 w-full max-w-xs transition-transform active:scale-95"
+            @click="goToMenu"
+          >
+            Jelajahi Menu
+          </button>
         </div>
       </div>
 
-      <!-- Bottom Spacer -->
-      <div style="height: 24px;"></div>
     </div>
   </AppLayout>
 </template>
@@ -42,7 +50,7 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { ClipboardDocumentListIcon } from '@heroicons/vue/24/outline';
+import { TicketIcon } from '@heroicons/vue/24/outline';
 
 const activeTab = ref('Aktif');
 
@@ -50,102 +58,3 @@ function goToMenu() {
   router.visit('/menu');
 }
 </script>
-
-<style scoped>
-.orders-page {
-  background: #F0EEFF;
-  min-height: 100vh;
-}
-
-.orders-header {
-  background: white;
-  padding: 52px 24px 20px;
-  border-bottom: 1px solid #F0F0F0;
-}
-
-.orders-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: #7C6BC4;
-  margin: 0 0 4px;
-}
-
-.orders-subtitle {
-  font-size: 14px;
-  color: #6B7280;
-  margin: 0;
-}
-
-.px-container {
-  padding: 0 16px;
-}
-
-.orders-tabs {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1.5px solid #E5E7EB;
-  background: white;
-  font-size: 14px;
-  font-weight: 600;
-  color: #6B7280;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tab-btn.active {
-  background: #7C6BC4;
-  border-color: #7C6BC4;
-  color: white;
-}
-
-.orders-list {
-  margin-top: 40px;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.empty-illustration {
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.empty-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1B1B1B;
-  margin: 0 0 8px;
-}
-
-.empty-desc {
-  font-size: 14px;
-  color: #6B7280;
-  line-height: 1.6;
-  margin: 0 0 24px;
-}
-
-.menu-btn {
-  background: #7C6BC4;
-  color: white;
-  border: none;
-  padding: 12px 32px;
-  border-radius: 14px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(124, 107, 196, 0.2);
-}
-
-.menu-btn:hover {
-  background: #5A4DA0;
-}
-</style>

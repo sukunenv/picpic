@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class OrderController extends Controller
 {
@@ -14,6 +15,7 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'customer_name'  => 'required|string|max:100',
+            'customer_phone' => 'nullable|string|max:20',
             'table_number'   => 'nullable|string|max:20',
             'payment_method' => 'required|in:qris,transfer,cash,pay_later',
             'items'          => 'required|array|min:1',
@@ -41,6 +43,7 @@ class OrderController extends Controller
 
             $order = Order::create([
                 'customer_name'  => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'] ?? null,
                 'table_number'   => $validated['table_number'] ?? null,
                 'payment_method' => $validated['payment_method'],
                 'payment_status' => $validated['payment_method'] === 'pay_later' ? 'unpaid' : 'unpaid',
@@ -69,5 +72,11 @@ class OrderController extends Controller
     {
         $order = Order::with('orderItems.menuItem')->findOrFail($id);
         return response()->json(['data' => $order]);
+    }
+
+    public function receipt($id)
+    {
+        $order = Order::with('orderItems.menuItem')->findOrFail($id);
+        return Inertia::render('Receipt', ['order' => $order]);
     }
 }

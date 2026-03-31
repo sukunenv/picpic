@@ -1,61 +1,97 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+body {
+  font-family: 'Poppins', sans-serif !important;
+}
+
 :root {
-  --primary: #7C6BC4;
-  --secondary: #6B5BB8;
-  --accent: #9B8FD4;
-  --background: #F0EEFF;
-  --card: #FFFFFF;
-  --text-primary: #1B1B1B;
-  --text-secondary: #6B7280;
+  --primary: #6367FF;       /* Picpic Primary */
+  --primary-dark: #4B50E6;  /* Primary dark */
+  --secondary: #FFFFFF;     /* Background secondary */
+  --accent: #6367FF;        /* Accent/highlight */
+  --background: #F8F7FF;    /* Putih ungu muda */
+  --pink-light: #FFDBFD;    /* Badge/chip kecil */
+  --card: #FFFFFF;          /* Pure White */
+  --text-primary: #2D2B55;  /* Ungu sangat tua */
+  --text-secondary: #6B6B8A;/* Text secondary */
+  --surface: #FFFFFF;
 }
 
 * {
   -webkit-tap-highlight-color: transparent;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 body {
-  background-color: #e5e5e5; /* Desktop background */
+  background-color: #F3F4F6; /* Desktop background - neutral gray */
   margin: 0;
   color: var(--text-primary);
+  overflow-x: hidden;
 }
 
 #app {
-  max-width: 430px;
-  margin: 0 auto;
-  background-color: var(--background);
+  width: 100%;
   min-height: 100vh;
+  background-color: var(--background);
   position: relative;
-  box-shadow: 0 0 40px rgba(0,0,0,0.1);
 }
 
-/* Custom scrollbar for better mobile feel */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 0px;
   background: transparent;
 }
 
+/* Button interactions */
 button:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
 }
 
-/* Page transitions */
+/* Global Transitions */
 .page-enter-active,
 .page-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .page-enter-from {
   opacity: 0;
-  transform: translateX(10px);
+  transform: translateX(20px);
 }
 
 .page-leave-to {
   opacity: 0;
-  transform: translateX(-10px);
+  transform: translateX(-20px);
+}
+
+/* Utility for Wave Curve */
+.wave-container {
+  position: relative;
+  background: var(--primary);
+  padding-bottom: 40px;
+}
+
+.wave-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  transform: rotate(180deg);
+}
+
+.wave-bottom svg {
+  position: relative;
+  display: block;
+  width: calc(100% + 1.3px);
+  height: 40px;
+}
+
+.wave-bottom .shape-fill {
+  fill: var(--background);
 }

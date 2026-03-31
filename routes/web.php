@@ -7,7 +7,9 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\MenuItemController as AdminMenuItemController;
+use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Models\Order;
+use App\Models\Banner;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -37,11 +39,18 @@ Route::get('/order/{id}/status', function ($id) {
     return Inertia::render('OrderStatus', ['order' => $order]);
 })->name('order.status');
 
+Route::get('/order/{id}/receipt', [OrderController::class, 'receipt'])->name('order.receipt');
+
 // API Routes untuk data
 Route::prefix('api')->group(function () {
     Route::get('/menu-items', [MenuController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::get('/banners', function () {
+        return response()->json([
+            'data' => Banner::active()->orderBy('order')->get()
+        ]);
+    });
 });
 
 Route::post('/cart/checkout', [CartController::class, 'store'])->name('cart.checkout');
@@ -68,4 +77,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/menu/{menuItem}', [AdminMenuItemController::class, 'update'])->name('admin.menu.update');
     Route::post('/menu/{menuItem}/toggle', [AdminMenuItemController::class, 'toggle'])->name('admin.menu.toggle');
     Route::delete('/menu/{menuItem}', [AdminMenuItemController::class, 'destroy'])->name('admin.menu.destroy');
+    
+    // Banners Management
+    Route::get('/banners', [AdminBannerController::class, 'index'])->name('admin.banners');
+    Route::post('/banners', [AdminBannerController::class, 'store'])->name('admin.banners.store');
+    Route::post('/banners/{banner}', [AdminBannerController::class, 'update'])->name('admin.banners.update');
+    Route::post('/banners/{banner}/toggle', [AdminBannerController::class, 'toggle'])->name('admin.banners.toggle');
+    Route::delete('/banners/{banner}', [AdminBannerController::class, 'destroy'])->name('admin.banners.destroy');
 });

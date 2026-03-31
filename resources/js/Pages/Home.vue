@@ -1,178 +1,202 @@
 <template>
   <AppLayout>
-    <div class="home-page">
+    <div class="home-page min-h-screen bg-gray-50 pb-28">
+      
+      <!-- ── HEADER & SEARCH ────────────────────────────────── -->
+      <div class="relative pb-6">
+        <!-- Header ungu dengan curve bawah -->
+        <div class="bg-primary px-6 pt-12 pb-16 rounded-b-[40px]">
+          
+          <!-- Greeting -->
+          <div class="flex justify-between items-center mb-2">
+            <div>
+              <h1 class="text-white text-xl font-semibold leading-tight">
+                Selamat datang,
+              </h1>
+              <p class="text-white/80 text-sm font-medium mt-0.5">
+                Mau ngopi apa hari ini? ☕
+              </p>
+            </div>
+            <div class="rounded-full bg-white p-1 border-2 border-white/30 shadow-md">
+              <img src="/logo.png" class="w-10 h-10 rounded-full object-contain">
+            </div>
+          </div>
 
-      <!-- ── HEADER ─────────────────────────────────────────── -->
-      <div class="home-header">
-        <div class="greeting">
-          <p class="greeting-sub">Selamat datang di</p>
-          <div class="brand-row">
-            <span class="brand-line-logo">
-              <img src="/logo.png" class="w-8 h-8 rounded-full">
-            </span>
-            <h1 class="brand-name">Picpic</h1>
+          <!-- Search bar overlap (push down) -->
+          <div class="translate-y-10" @click="goToMenu">
+            <div class="bg-white rounded-2xl shadow-xl flex items-center px-4 py-4 gap-3 cursor-pointer border-gray-100 border transition-transform active:scale-[0.98]">
+              <MagnifyingGlassIcon class="text-primary/60 w-5 h-5"/>
+              <span class="flex-1 outline-none text-sm text-primary/60 font-medium">Cari minuman atau snack...</span>
+            </div>
           </div>
         </div>
-        <button class="notif-btn" aria-label="Notifikasi">
-          <BellIcon class="h-6 w-6" />
-        </button>
       </div>
 
-      <!-- ── SEARCH ─────────────────────────────────────────── -->
-      <div class="px-container">
-        <div class="search-bar" @click="goToMenu">
-          <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" />
-          <span class="search-placeholder">Cari menu favoritmu…</span>
-        </div>
-      </div>
+      <!-- ── PROMO BANNER ──────────────────────────────────────── -->
+      <div class="px-6 mt-2 relative overflow-hidden h-52 sm:h-60 group">
+        <!-- Loading State -->
+        <div v-if="loadingBanners" class="w-full h-full bg-gray-200 animate-pulse rounded-[32px]"></div>
 
-      <!-- ── PROMO BANNER ───────────────────────────────────── -->
-      <div class="px-container">
-        <div class="promo-banner">
-          <div class="promo-text">
-            <span class="promo-badge">
-              <GiftIcon class="h-3 w-3 mr-1 inline" /> Promo
-            </span>
-            <h2 class="promo-title">Gratis Minuman<br>untuk 10 Pembeli Pertama!</h2>
-            <p class="promo-desc">Setiap hari jam 08.00 – 10.00</p>
-          </div>
-          <div class="promo-visual">
-            <TicketIcon class="h-16 w-16 opacity-20 absolute -right-4 -bottom-4 text-white" />
-            <GiftIcon class="h-16 w-16 text-white" />
+        <!-- Banner Content -->
+        <div v-else class="w-full h-full relative">
+          <transition-group name="slide-fade">
+            <div v-for="(banner, index) in banners" 
+                 :key="banner.id"
+                 v-show="currentBanner === index"
+                 class="absolute inset-0 w-full h-full rounded-[32px] overflow-hidden shadow-xl shadow-primary/10"
+            >
+              <!-- Background Image / Gradient Fallback -->
+              <div v-if="banner.image" class="absolute inset-0">
+                <img :src="banner.image" 
+                     class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                     :alt="banner.title"
+                >
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+              </div>
+              <div v-else class="absolute inset-0 bg-gradient-to-br from-primary via-[#7C6BC4] to-[#4B3FA0]"></div>
+
+              <!-- Content Overlay -->
+              <div class="absolute inset-0 flex flex-col justify-end p-6 pb-8">
+                <h2 class="text-white text-xl sm:text-2xl font-black mb-1 drop-shadow-md leading-tight">{{ banner.title }}</h2>
+                <p class="text-white/90 text-[11px] sm:text-xs font-medium mb-4 line-clamp-2 drop-shadow-md max-w-[80%]">{{ banner.description }}</p>
+                <div v-if="banner.button_text" 
+                     class="self-start px-5 py-2.5 bg-white text-primary rounded-xl font-bold text-[11px] shadow-lg shadow-black/10 active:scale-95 transition-transform"
+                     @click="handleBannerClick(banner.button_url)"
+                >
+                  {{ banner.button_text }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State / Default Fallback -->
+            <div v-if="banners.length === 0" key="fallback" class="w-full h-full bg-gradient-to-br from-primary via-[#7C6BC4] to-[#4B3FA0] rounded-[32px] flex flex-col items-center justify-center p-6 text-center">
+              <div class="bg-white/20 p-4 rounded-full mb-4 backdrop-blur-md ring-8 ring-white/5">
+                <img src="/logo.png" class="w-16 h-16 object-contain" alt="Picpic">
+              </div>
+              <p class="text-white/60 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">Stay tuned</p>
+              <h2 class="text-white text-xl font-bold">kumpul mencerita ☕</h2>
+            </div>
+          </transition-group>
+
+          <!-- Dots Indicator -->
+          <div v-if="banners.length > 1" class="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
+            <button v-for="(_, index) in banners" 
+                    :key="index"
+                    class="h-1.5 rounded-full transition-all duration-300"
+                    :class="currentBanner === index ? 'w-6 bg-white' : 'w-1.5 bg-white/40'"
+                    @click="setBanner(index)"
+            ></button>
           </div>
         </div>
       </div>
 
       <!-- ── KATEGORI ───────────────────────────────────────── -->
-      <div class="section">
-        <div class="section-header px-container">
-          <h2 class="section-title">Kategori</h2>
+      <div class="mt-10">
+        <div class="px-6 mb-4 flex items-center justify-between">
+          <h3 class="text-primary font-semibold text-base">Kategori Kopi</h3>
+          <button class="text-accent font-bold text-xs">Lihat Semua</button>
         </div>
-        <div class="scroll-row">
-          <button
-            v-for="cat in categories"
-            :key="cat.id"
-            class="category-pill"
-            :class="{ active: activeCategory === cat.id }"
-            @click="selectCategory(cat.id)"
-          >
-            {{ cat.label }}
-          </button>
+        <div class="flex gap-4 overflow-x-auto px-6 hide-scrollbar">
+          <div v-for="cat in categories" :key="cat.id" class="flex flex-col items-center gap-2 flex-shrink-0" @click="selectCategory(cat.id)">
+            <div 
+              class="w-16 h-16 rounded-full flex items-center justify-center p-4 transition duration-300"
+              :class="activeCategory === cat.id ? 'bg-primary shadow-lg shadow-primary/30 scale-110' : 'bg-white shadow-sm'"
+            >
+              <component :is="cat.icon" class="w-full h-full" :class="activeCategory === cat.id ? 'text-white' : 'text-primary/80'" />
+            </div>
+            <span class="text-[11px] font-bold" :class="activeCategory === cat.id ? 'text-primary' : 'text-gray-400'">{{ cat.label }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- ── PALING POPULER ─────────────────────────────────── -->
-      <div class="section">
-        <div class="section-header px-container">
-          <h2 class="section-title">Populer</h2>
-          <button class="see-all" @click="goToMenu">Lihat semua</button>
+      <!-- ── POPULER ─────────────────────────────────── -->
+      <div class="mt-10 mb-8">
+        <div class="px-6 mb-4 flex items-center justify-between">
+          <h3 class="text-primary font-semibold text-base">Menu Terlaris 🔥</h3>
         </div>
-
-        <div v-if="loadingMenu" class="scroll-row">
-          <div v-for="n in 4" :key="n" class="pop-card skeleton-card"></div>
-        </div>
-
-        <div v-else class="scroll-row">
-          <div
-            v-for="item in popularItems"
-            :key="item.id"
-            class="pop-card"
-            @click="openDetail(item)"
-          >
-            <div class="pop-img-wrap">
-              <img :src="item.image" :alt="item.name" class="pop-img" />
-            </div>
-            <div class="pop-info">
-              <p class="pop-name">{{ item.name }}</p>
-              <div class="pop-rating">
-                <StarIcon class="h-3 w-3 text-yellow-500 fill-current" />
-                <span>{{ item.rating }}</span>
+        <div class="flex gap-4 overflow-x-auto px-6 hide-scrollbar pb-4 -mx-1">
+          <div v-for="item in popularItems" :key="item.id" class="popular-card flex-shrink-0 bg-white p-4 rounded-3xl w-40 sm:w-44 shadow-card-menu relative group" @click="addToCart(item)">
+            <div class="relative mb-4">
+              <img :src="item.image" :alt="item.name" class="w-28 h-28 sm:w-32 sm:h-32 mx-auto object-cover rounded-2xl group-hover:scale-105 transition duration-500">
+              <div class="absolute -top-1 -right-1 bg-accent p-2 rounded-xl shadow-md transform rotate-12">
+                <StarIcon class="h-3 w-3 text-white fill-current" />
               </div>
-              <p class="pop-price">{{ formatPrice(item.price) }}</p>
             </div>
-            <button class="add-btn-round" @click.stop="addToCart(item)">
-              <PlusIcon class="h-5 w-5" />
+            <div class="space-y-1">
+              <h4 class="text-primary font-bold text-sm truncate">{{ item.name }}</h4>
+              <p class="text-primary font-bold text-xs">{{ formatPrice(item.price) }}</p>
+            </div>
+            <button class="absolute bottom-4 right-4 bg-accent w-8 h-8 rounded-xl flex items-center justify-center shadow-lg shadow-accent/20 group-hover:scale-110 transition duration-300">
+              <PlusIcon class="h-5 w-5 text-white" />
             </button>
           </div>
+          <!-- Right spacer padding fix -->
+          <div class="w-2 flex-shrink-0"></div>
         </div>
       </div>
 
       <!-- ── SEMUA MENU ─────────────────────────────────────── -->
-      <div class="section">
-        <div class="section-header px-container">
-          <h2 class="section-title">
-            {{ activeCategory === 'Semua' ? 'Semua Menu' : activeCategory }}
-          </h2>
-          <span class="item-count">{{ filteredItems.length }} item</span>
-        </div>
-
-        <div class="px-container menu-list">
-          <div v-if="loadingMenu">
-            <div v-for="n in 4" :key="n" class="list-card skeleton-list"></div>
-          </div>
-
-          <div
-            v-for="item in filteredItems"
-            :key="item.id"
-            class="list-card"
-          >
-            <div class="list-img-wrap">
-              <img :src="item.image" :alt="item.name" class="list-img" />
-            </div>
-            <div class="list-info">
-              <p class="list-name">{{ item.name }}</p>
-              <p class="list-desc">{{ item.description }}</p>
-              <div class="list-bottom">
-                <div class="list-rating">
-                  <StarIcon class="h-3 w-3 text-yellow-500 fill-current" />
-                  <span>{{ item.rating }}</span>
-                </div>
-                <p class="list-price">{{ formatPrice(item.price) }}</p>
+      <div class="px-6 mt-4">
+        <h3 class="text-primary font-semibold text-base mb-4">Semua Menu</h3>
+        <div class="space-y-4">
+          <div v-for="item in filteredItems.slice(0, 4)" :key="item.id" class="flex bg-white p-3 rounded-2xl shadow-card-menu border-none gap-4 items-center" @click="addToCart(item)">
+            <img :src="item.image" :alt="item.name" class="w-20 h-20 rounded-xl object-cover flex-shrink-0">
+            <div class="flex-1 min-w-0 py-1">
+              <h4 class="text-primary font-bold text-sm truncate mb-0.5">{{ item.name }}</h4>
+              <p class="text-gray-400 text-[10px] line-clamp-1 mb-2">{{ item.description }}</p>
+              <div class="flex items-center gap-2">
+                 <span class="text-[#6367FF] font-semibold text-sm">{{ formatPrice(item.price) }}</span>
+                 <span class="bg-[#F8F9FA] text-[#F59E0B] text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                   <StarIconSolid class="h-2 w-2" /> {{ item.rating }}
+                 </span>
               </div>
             </div>
-            <button class="add-btn-square" @click="addToCart(item)">
-              <PlusIcon class="h-6 w-6" />
+            <button class="w-9 h-9 flex-shrink-0 rounded-xl bg-accent flex items-center justify-center shadow-md shadow-accent/20 active:scale-90 transition-transform">
+              <PlusIcon class="h-5 w-5 text-white" />
             </button>
           </div>
-
-          <p v-if="!loadingMenu && filteredItems.length === 0" class="empty-msg">
-            Tidak ada menu di kategori ini...
-          </p>
+          
+          <button @click="goToMenu" class="w-full bg-primary/10 text-primary font-bold text-[13px] py-4 rounded-2xl mt-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+            Lihat Semua Menu <ArrowRightIcon class="h-4 w-4 stroke-2" />
+          </button>
         </div>
       </div>
 
-      <!-- bottom padding -->
-      <div style="height: 16px;"></div>
-    </div>
+      <!-- Snackbar -->
+      <transition name="snack">
+        <div v-if="showSnack" class="snackbar-modern">
+          <div class="flex items-center gap-3">
+             <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                <CheckCircleIcon class="h-5 w-5 text-accent" />
+             </div>
+             <div>
+               <p class="text-white text-xs font-bold">{{ snackMsg }}</p>
+               <button @click="goToCart" class="text-accent text-[10px] font-bold uppercase tracking-wider">Lihat Keranjang</button>
+             </div>
+          </div>
+        </div>
+      </transition>
 
-    <!-- Item Added Snackbar -->
-    <transition name="snack">
-      <div v-if="showSnack" class="snackbar">
-        <CheckCircleIcon class="h-5 w-5 inline mr-1" /> {{ snackMsg }}
-      </div>
-    </transition>
+    </div>
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useCartStore } from '@/stores/cartStore';
 import { 
   MagnifyingGlassIcon, 
-  SparklesIcon, 
-  BellIcon, 
-  GiftIcon, 
-  TicketIcon,
-  StarIcon,
+  StarIcon, 
   PlusIcon,
   CheckCircleIcon,
   Squares2X2Icon,
   BeakerIcon,
   CakeIcon,
-  VariableIcon as MugIcon,
-  WrenchScrewdriverIcon as UtensilsIcon
+  ArrowRightIcon,
+  LifebuoyIcon as MugIcon,
+  HandThumbUpIcon as UtensilsIcon
 } from '@heroicons/vue/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
 
@@ -183,18 +207,55 @@ const activeCategory = ref('Semua');
 const showSnack = ref(false);
 const snackMsg = ref('');
 
-const categories = [
-  { id: 'Semua',    label: 'Semua',    icon: Squares2X2Icon },
-  { id: 'Kopi',     label: 'Kopi',     icon: MugIcon },
-  { id: 'Non-Kopi', label: 'Non-Kopi', icon: BeakerIcon },
-  { id: 'Makanan',  label: 'Makanan',  icon: UtensilsIcon },
-  { id: 'Dessert',  label: 'Dessert',  icon: CakeIcon },
-];
+// ── BANNER LOGIC ──────────────────────────────────────
+const banners = ref([]);
+const loadingBanners = ref(true);
+const currentBanner = ref(0);
+let bannerTimer = null;
 
-function getCategoryIcon(cat) {
-  const found = categories.find(c => c.id === cat);
-  return found ? found.icon : Squares2X2Icon;
-}
+const fetchBanners = async () => {
+  try {
+    const response = await fetch('/api/banners');
+    const result = await response.json();
+    banners.value = result.data;
+    if (banners.value.length > 1) {
+      startBannerTimer();
+    }
+  } catch (e) {
+    console.error('Error loading banners', e);
+  } finally {
+    loadingBanners.value = false;
+  }
+};
+
+const startBannerTimer = () => {
+  if (bannerTimer) clearInterval(bannerTimer);
+  bannerTimer = setInterval(() => {
+    currentBanner.value = (currentBanner.value + 1) % banners.value.length;
+  }, 4000);
+};
+
+const setBanner = (index) => {
+  currentBanner.value = index;
+  startBannerTimer(); // Reset timer on manual interaction
+};
+
+const handleBannerClick = (url) => {
+  if (!url) return;
+  if (url.startsWith('http')) {
+    window.location.href = url;
+  } else {
+    router.visit(url);
+  }
+};
+
+const categories = [
+  { id: 'Semua',    label: 'Semua',      icon: Squares2X2Icon },
+  { id: 'Kopi',     label: 'Kopi',       icon: MugIcon },
+  { id: 'Non-Kopi', label: 'Non-Kopi',   icon: BeakerIcon },
+  { id: 'Makanan',  label: 'Makanan',    icon: UtensilsIcon },
+  { id: 'Dessert',  label: 'Dessert',    icon: CakeIcon },
+];
 
 const popularItems = computed(() =>
   allMenuItems.value.filter(i => i.is_popular).slice(0, 6)
@@ -224,476 +285,66 @@ function selectCategory(cat) {
 
 function addToCart(item) {
   cartStore.addItem(item);
-  snackMsg.value = `${item.name} ditambahkan!`;
+  snackMsg.value = `${item.name} Berhasil Ditambah!`;
   showSnack.value = true;
-  setTimeout(() => { showSnack.value = false; }, 2000);
-}
-
-function openDetail(item) {
-  // bisa extend ke modal atau halaman detail
-  addToCart(item);
+  // Trigger bounce on bottom nav automatically via AppLayout watching store
+  setTimeout(() => { showSnack.value = false; }, 3000);
 }
 
 function goToMenu() {
   router.visit('/menu');
 }
 
+function goToCart() {
+  router.visit('/cart');
+}
+
 function formatPrice(price) {
   return 'Rp ' + Number(price).toLocaleString('id-ID');
 }
 
-onMounted(fetchMenu);
+onMounted(() => {
+  fetchBanners();
+  fetchMenu();
+});
+
+onUnmounted(() => {
+  if (bannerTimer) clearInterval(bannerTimer);
+});
 </script>
 
 <style scoped>
-.home-page {
-  background: #F0EEFF;
-  min-height: 100dvh;
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(40px);
+}
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-40px);
 }
 
-/* Header */
-.home-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 52px 20px 16px;
-  background: #ffffff;
-}
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-.greeting-sub {
-  font-size: 13px;
-  color: #6B7280;
-  margin: 0 0 2px;
-}
-
-.brand-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.brand-logo { font-size: 24px; }
-
-.brand-name {
-  font-size: 28px;
-  font-weight: 800;
-  color: #7C6BC4;
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-.notif-btn {
-  background: #F3F4F6;
-  border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #7C6BC4;
-  margin-top: 8px;
-  transition: background 0.2s;
-}
-
-.notif-btn:hover { background: #E8EAF6; }
-
-/* Container */
-.px-container { padding: 0 16px; }
-
-/* Search */
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 13px 16px;
-  margin: 16px 0;
-  cursor: pointer;
-  transition: background 0.2s;
-  border: 1px solid #E5E7EB;
-}
-
-.search-bar:hover { background: #F9FAFB; }
-
-.search-icon { color: #9CA3AF; }
-
-.search-placeholder {
-  color: #9CA3AF;
-  font-size: 14px;
-}
-
-/* Promo Banner */
-.promo-banner {
-  background: linear-gradient(135deg, #7C6BC4 0%, #5A4DA0 100%);
-  border-radius: 20px;
-  padding: 22px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  overflow: hidden;
-  position: relative;
-}
-
-.promo-banner::before {
-  content: '';
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 50%;
-  right: -30px;
-  top: -30px;
-}
-
-.promo-badge {
-  display: inline-block;
-  background: #9B8FD4;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 20px;
-  margin-bottom: 8px;
-}
-
-.promo-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.3;
-  margin: 0 0 6px;
-}
-
-.promo-desc {
-  font-size: 12px;
-  color: rgba(255,255,255,0.7);
-  margin: 0;
-}
-
-.promo-visual {
-  font-size: 64px;
-  line-height: 1;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-}
-
-/* Section */
-.section { margin-top: 24px; }
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.section-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #1B1B1B;
-  margin: 0;
-}
-
-.item-count {
-  font-size: 13px;
-  color: #6B7280;
-  background: #ffffff;
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1px solid #E5E7EB;
-}
-
-.see-all {
-  font-size: 13px;
-  font-weight: 600;
-  color: #7C6BC4;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.see-all:hover { background: #E8EAF6; }
-
-/* Category Pills */
-.scroll-row {
-  display: flex;
-  gap: 10px;
-  padding: 4px 16px 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.scroll-row::-webkit-scrollbar { display: none; }
-
-.category-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 50px;
-  border: 1.5px solid #E5E7EB;
-  background: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
-  color: #4B5563;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  min-height: 38px;
-}
-
-.category-pill:hover {
-  border-color: #9B8FD4;
-  color: #7C6BC4;
-}
-
-.category-pill.active {
-  background: #7C6BC4;
-  border-color: #7C6BC4;
-  color: #ffffff;
-}
-
-.cat-emoji { font-size: 15px; }
-
-/* Popular Cards */
-.pop-card {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 16px;
-  width: 148px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.pop-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
-
-.pop-img-wrap {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 12px;
-}
-
-.pop-img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%; /* Bulat sempurna */
-  object-fit: cover;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.pop-info { text-align: center; }
-
-.pop-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1B1B1B;
-  margin: 0 0 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pop-rating {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  font-size: 12px;
-  color: #F59E0B;
-  margin-bottom: 4px;
-  font-weight: 600;
-}
-
-.star { font-size: 12px; }
-
-.pop-price {
-  font-size: 13px;
-  font-weight: 700;
-  color: #7C6BC4;
-  margin: 0;
-}
-
-.add-btn-round {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: #7C6BC4;
-  border: none;
-  color: white;
-  font-size: 22px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 3px 10px rgba(124, 107, 196, 0.35);
-}
-
-.add-btn-round:hover {
-  background: #5A4DA0;
-  transform: scale(1.1);
-}
-
-.add-btn-round:active { transform: scale(0.95); }
-
-/* List Cards */
-.menu-list { display: flex; flex-direction: column; gap: 12px; }
-
-.list-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 14px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  transition: transform 0.2s ease;
-}
-
-.list-card:hover { transform: translateX(2px); }
-
-.list-img-wrap {
-  width: 64px;
-  height: 64px;
-  margin-right: 12px;
-  flex-shrink: 0;
-}
-
-.list-img {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px; /* rounded-2xl approximate */
-  object-fit: cover;
-}
-
-.list-info { flex: 1; min-width: 0; }
-
-.list-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1B1B1B;
-  margin: 0 0 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.list-desc {
-  font-size: 12px;
-  color: #6B7280;
-  margin: 0 0 6px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.list-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.list-rating {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 12px;
-  color: #F59E0B;
-  font-weight: 600;
-}
-
-.list-price {
-  font-size: 14px;
-  font-weight: 700;
-  color: #7C6BC4;
-  margin: 0;
-}
-
-.add-btn-square {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: #7C6BC4;
-  border: none;
-  color: white;
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-  box-shadow: 0 3px 10px rgba(124, 107, 196, 0.3);
-}
-
-.add-btn-square:hover { background: #5A4DA0; transform: scale(1.05); }
-.add-btn-square:active { transform: scale(0.95); }
-
-/* Skeleton */
-.skeleton-card {
-  width: 148px !important;
-  height: 200px;
-  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 20px;
-}
-
-.skeleton-list {
-  height: 92px;
-  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 16px;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.empty-msg {
-  text-align: center;
-  color: #9CA3AF;
-  padding: 32px 0;
-  font-size: 15px;
-}
-
-/* Snackbar */
-.snackbar {
+.snackbar-modern {
   position: fixed;
   top: 24px;
   left: 50%;
   transform: translateX(-50%);
   background: #1B1B1B;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 999;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  white-space: nowrap;
+  padding: 12px 16px;
+  border-radius: 20px;
+  width: calc(100% - 48px);
+  max-width: 350px;
+  z-index: 1000;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
 }
 
-.snack-enter-active, .snack-leave-active { transition: all 0.3s ease; }
-.snack-enter-from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
-.snack-leave-to { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+.snack-enter-active, .snack-leave-active { transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.snack-enter-from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+.snack-leave-to { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.9); }
 </style>

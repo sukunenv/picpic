@@ -61,7 +61,6 @@
                   class="toggle-avail"
                   :class="{ active: item.is_available }"
                   @click="toggleAvailability(item)"
-                  title="Toggle Ketersediaan"
                 >
                   <span class="toggle-dot"></span>
                   <span class="toggle-label">{{ item.is_available ? 'Tersedia' : 'Habis' }}</span>
@@ -69,11 +68,11 @@
               </td>
               <td>
                 <div class="action-btns-row">
-                  <button class="btn-edit-icon" @click="openModal(item)" title="Edit">
-                    <PencilSquareIcon class="h-5 w-5" />
+                  <button class="btn-edit-icon" @click="openModal(item)">
+                    <PencilSquareIcon class="h-4 w-4" />
                   </button>
-                  <button class="btn-delete-icon" @click="confirmDelete(item)" title="Hapus">
-                    <TrashIcon class="h-5 w-5" />
+                  <button class="btn-delete-icon" @click="confirmDelete(item)">
+                    <TrashIcon class="h-4 w-4" />
                   </button>
                 </div>
               </td>
@@ -137,6 +136,23 @@
           </form>
         </div>
       </div>
+
+      <!-- Delete Confirmation Modal -->
+      <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
+        <div class="modal-card" style="max-width: 400px;">
+          <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+            <h3>Konfirmasi Hapus</h3>
+            <button class="close-btn" @click="showDeleteModal = false">✕</button>
+          </div>
+          <div class="modal-form" style="padding-top: 12px;">
+            <p style="font-size: 14px; color: #4B5563; margin-bottom: 24px; line-height: 1.5;">Yakin hapus menu <strong>{{ itemToDelete?.name }}</strong>?</p>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn-cancel" @click="showDeleteModal = false">Batal</button>
+              <button class="btn-save" style="background: #EF4444;" @click="procDelete">Ya, Hapus</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </AdminLayout>
 </template>
@@ -158,6 +174,8 @@ const props = defineProps({
 
 const searchQuery = ref('');
 const showModal = ref(false);
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
 const isEdit = ref(false);
 const currentId = ref(null);
 
@@ -222,9 +240,15 @@ function toggleAvailability(item) {
 }
 
 function confirmDelete(item) {
-  if (confirm(`Yakin ingin menghapus ${item.name}?`)) {
-    router.delete(route('admin.menu.destroy', item.id), {
-      preserveScroll: true
+  itemToDelete.value = item;
+  showDeleteModal.value = true;
+}
+
+function procDelete() {
+  if (itemToDelete.value) {
+    router.delete(route('admin.menu.destroy', itemToDelete.value.id), {
+      preserveScroll: true,
+      onSuccess: () => { showDeleteModal.value = false; itemToDelete.value = null; }
     });
   }
 }
@@ -251,7 +275,7 @@ function formatPrice(price) {
   margin-bottom: 24px;
 }
 
-.page-title { font-size: 24px; font-weight: 800; color: #1B1B1B; margin: 0; }
+.page-title { font-size: 1.25rem; font-weight: 800; color: #1B1B1B; margin: 0; }
 .page-sub { font-size: 13px; color: #6B7280; margin: 4px 0 0; }
 
 .btn-add {

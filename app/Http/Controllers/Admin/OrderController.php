@@ -9,14 +9,47 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with('orderItems.menuItem')
-                       ->orderBy('created_at', 'desc')
-                       ->get();
+        $query = Order::with('orderItems.menuItem')->orderBy('created_at', 'desc');
+
+        // Filter by search
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $cleanId = ltrim(str_replace(['#', 'PIC-'], '', $request->search), '0');
+                if (is_numeric($cleanId)) {
+                    $q->orWhere('id', (int)$cleanId);
+                }
+                $q->orWhere('customer_name', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Filter by status
+        if ($request->status && $request->status !== 'semua') {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by payment status
+        if ($request->only_unpaid === 'true') {
+            $query->where('payment_status', 'unpaid');
+        }
+
+        // Pagination
+        $perPage = $request->input('per_page', 9);
+        $orders = $query->paginate($perPage)->withQueryString();
+
+        // Status counts for Tabs (ignoring current filters to keep badges globally absolute)
+        $counts = [
+            'semua' => Order::count(),
+            'pending' => Order::where('status', 'pending')->count(),
+            'processing' => Order::where('status', 'processing')->count(),
+            'done' => Order::where('status', 'done')->count(),
+        ];
 
         return Inertia::render('Admin/Orders', [
-            'orders' => $orders
+            'orders' => $orders,
+            'filters' => $request->only('search', 'status', 'only_unpaid', 'per_page'),
+            'counts' => $counts
         ]);
     }
 

@@ -24,9 +24,10 @@ class DatabaseSeeder extends Seeder
         // Test User
         User::updateOrCreate(
             ['email' => 'test@example.com'],
-            ['name' => 'Test User']
+            ['name' => 'Test User', 'password' => bcrypt('password')]
         );
 
         $this->call(MenuItemSeeder::class);
+        $this->call(BannerSeeder::class);
     }
 }
