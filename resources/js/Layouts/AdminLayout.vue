@@ -1,18 +1,18 @@
 <template>
-  <div class="flex h-screen overflow-hidden bg-gray-50 font-sans">
+  <div class="flex h-screen overflow-hidden bg-[#eef2f3] font-sans">
     <Head :title="title" />
     <!-- SIDEBAR - fixed kiri, full height (Hanya Desktop) -->
-    <aside class="hidden lg:flex lg:flex-shrink-0">
-      <div class="flex flex-col w-64 bg-[#4B3FA0] shadow-xl shadow-[#4B3FA0]/10 z-50">
+    <aside class="hidden lg:flex lg:flex-shrink-0 p-4 pr-0">
+      <div class="flex flex-col w-64 bg-[#4B3FA0] shadow-2xl shadow-[#4B3FA0]/20 z-50 rounded-3xl overflow-hidden">
         
         <!-- Header Sidebar -->
-        <div class="p-6 flex items-center gap-3">
+        <div class="p-6 flex items-center gap-3 border-b border-white/10">
           <img src="/logo.png" class="w-8 h-8 rounded-full shrink-0 bg-white p-[2px]">
           <h1 class="text-lg font-extrabold tracking-tight text-white m-0">Picpic Admin</h1>
         </div>
         
         <!-- Nav items -->
-        <nav class="flex-1 px-4 flex flex-col gap-2 overflow-y-auto py-2">
+        <nav class="flex-1 px-4 flex flex-col gap-2 overflow-y-auto py-4">
           <Link
             v-for="item in navItems"
             :key="item.href"
@@ -41,10 +41,10 @@
     </aside>
 
     <!-- KONTEN KANAN - flex-1 agar isi sisa layar -->
-    <div class="flex flex-col flex-1 w-0 overflow-hidden">
+    <div class="flex flex-col flex-1 w-0 overflow-hidden lg:p-4 lg:pl-4">
       
       <!-- Mobile header -->
-      <header class="lg:hidden bg-white border-b border-gray-100 flex-shrink-0 flex items-center justify-between px-4 py-3 shadow-sm z-40">
+      <header class="lg:hidden bg-white/95 backdrop-blur-md border-b border-gray-100 flex-shrink-0 flex items-center justify-between px-4 py-3 shadow-sm z-40">
         <div class="flex items-center gap-2.5">
           <img src="/logo.png" alt="Picpic Logo" class="w-8 h-8 rounded-full" />
           <span class="font-extrabold text-[#7C6BC4] text-base">Picpic Admin</span>
@@ -55,7 +55,7 @@
       </header>
 
       <!-- Scrollable content -->
-      <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none">
+      <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none app-card lg:rounded-3xl lg:shadow-xl lg:ring-1 lg:ring-black/5 lg:bg-gradient-to-br lg:from-white lg:to-[#f8f9ff]">
         <div class="p-4 sm:p-6 lg:p-8 pb-32 lg:pb-8">
           <slot />
         </div>
@@ -64,7 +64,7 @@
     </div>
 
     <!-- Mobile bottom nav -->
-    <nav class="fixed bottom-0 inset-x-0 lg:hidden bg-white/90 backdrop-blur-md border-t border-gray-200 h-[72px] flex items-center justify-around z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] px-2 pb-safe">
+    <nav class="fixed bottom-3 inset-x-3 lg:hidden bg-white/95 backdrop-blur-md border border-gray-200/80 h-[70px] flex items-center justify-around z-50 shadow-[0_10px_35px_rgba(15,23,42,0.10)] rounded-2xl px-2 pb-safe">
       <Link
         v-for="item in navItems"
         :key="item.href"
@@ -88,10 +88,6 @@ export default {
 
 <script setup>
 import { Link, router, usePage, Head } from '@inertiajs/vue3';
-
-const props = defineProps({
-  title: String,
-});
 import { 
   SparklesIcon, 
   Squares2X2Icon, 
@@ -100,6 +96,10 @@ import {
   ArrowLeftStartOnRectangleIcon,
   PhotoIcon
 } from '@heroicons/vue/24/outline';
+
+const props = defineProps({
+  title: String,
+});
 
 const page = usePage();
 

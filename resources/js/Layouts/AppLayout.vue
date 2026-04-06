@@ -1,7 +1,7 @@
 <template>
-  <div class="app-shell bg-gray-100 min-h-screen">
+  <div class="app-shell bg-[#eef2f3] min-h-screen">
     <Head :title="title" />
-    <div class="max-w-lg mx-auto bg-white min-h-screen shadow-xl relative flex flex-col overflow-hidden">
+    <div class="max-w-lg mx-auto bg-white min-h-screen md:min-h-[96vh] md:my-4 md:rounded-[28px] md:shadow-2xl md:ring-1 md:ring-black/5 relative flex flex-col overflow-hidden">
       <!-- Page Content -->
       <main class="page-content flex-1 overflow-y-auto" :class="{ 'has-cart-bar': cartStore.totalItems > 0 && showBottomNav }">
         <slot />
@@ -33,6 +33,7 @@
         :class="{ active: isActive(tab.href) }"
         @click="navigate(tab.href)"
       >
+        <span v-if="isActive(tab.href)" class="nav-pill"></span>
         <span class="nav-icon">
           <component 
             :is="isActive(tab.href) ? tab.iconSolid : tab.iconOutline" 
@@ -57,10 +58,6 @@ export default {
 import { computed, watch } from 'vue';
 import { router, usePage, Head } from '@inertiajs/vue3';
 import { useCartStore } from '@/stores/cartStore';
-
-const props = defineProps({
-  title: String,
-});
 import { 
   HomeIcon as HomeIconOutline, 
   QueueListIcon as MenuIconOutline, 
@@ -73,6 +70,10 @@ import {
   TicketIcon as OrderIconSolid, 
   UserCircleIcon as ProfilIconSolid 
 } from '@heroicons/vue/24/solid';
+
+const props = defineProps({
+  title: String,
+});
 
 const cartStore = useCartStore();
 const page = usePage();
@@ -116,28 +117,30 @@ function formatPrice(price) {
 
 .page-content {
   flex: 1;
-  padding-bottom: 84px; /* More space for the new bottom nav */
+  padding-bottom: 92px;
 }
 
 .page-content.has-cart-bar {
-  padding-bottom: 160px;
+  padding-bottom: 168px;
 }
 
 /* Bottom Nav */
 .bottom-nav {
-  position: absolute; /* Stick to bottom of container, not screen */
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 84px;
-  background: #ffffff;
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  right: 12px;
+  height: 72px;
+  background: rgba(255, 255, 255, 0.96);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 12px 12px;
+  padding: 0 10px 6px;
   z-index: 100;
-  border-top: 1px solid #E8E6FF;
-  border-radius: 24px 24px 0 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
+  backdrop-filter: blur(8px);
 }
 
 .nav-tab {
@@ -149,13 +152,23 @@ function formatPrice(price) {
   border: none;
   background: none;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: #9CA3AF;
+  transition: color 0.2s ease, transform 0.2s ease;
+  color: #9ca3af;
   position: relative;
+  border-radius: 12px;
+}
+
+.nav-pill {
+  position: absolute;
+  inset: 2px 0 auto;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(99, 103, 255, 0.12);
+  z-index: -1;
 }
 
 .nav-tab.active {
-  color: #6367FF;
+  color: #2f356d;
 }
 
 .nav-icon {
@@ -163,12 +176,12 @@ function formatPrice(price) {
 }
 
 .nav-tab.active .nav-icon {
-  transform: translateY(-2px) scale(1.1);
+  transform: translateY(-1px);
 }
 
 .nav-label {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .nav-tab.active .nav-label {
@@ -178,32 +191,32 @@ function formatPrice(price) {
 .nav-indicator {
   position: absolute;
   bottom: 4px;
-  width: 5px;
-  height: 5px;
-  background: #6367FF;
+  width: 18px;
+  height: 2px;
+  background: #6367ff;
   border-radius: 50%;
-  animation: dot-scale 0.3s forwards;
+  animation: dot-scale 0.2s forwards;
 }
 
 @keyframes dot-scale {
-  from { transform: scale(0); opacity: 0; }
+  from { transform: scaleX(0); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
 /* Floating Cart */
 .floating-cart {
   position: absolute;
-  bottom: 100px;
+  bottom: 92px;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 40px);
-  background: linear-gradient(135deg, #6367FF, #8494FF);
-  border-radius: 20px;
-  padding: 16px 24px;
+  width: calc(100% - 48px);
+  background: linear-gradient(135deg, #6367ff, #7c6bc4);
+  border-radius: 16px;
+  padding: 14px 16px;
   cursor: pointer;
   z-index: 99;
-  box-shadow: 0 10px 30px rgba(99, 103, 255, 0.35);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 12px 24px rgba(99, 103, 255, 0.28);
+  transition: transform 0.2s ease;
 }
 
 .floating-cart:active {
@@ -224,23 +237,16 @@ function formatPrice(price) {
 
 .cart-badge {
   background: #ffffff;
-  color: #6367FF;
+  color: #6367ff;
   font-size: 13px;
   font-weight: 800;
   width: 28px;
   height: 28px;
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(99, 103, 255, 0.25);
-  animation: bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes bounce-in {
-  0% { transform: scale(0.5); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  box-shadow: 0 4px 10px rgba(17, 24, 39, 0.15);
 }
 
 .cart-float-label {
@@ -270,5 +276,46 @@ function formatPrice(price) {
 .cart-bounce-leave-to {
   opacity: 0;
   transform: translateX(-50%) translateY(30px) scale(0.9);
+}
+
+@media (max-width: 380px) {
+  .page-content {
+    padding-bottom: 88px;
+  }
+
+  .page-content.has-cart-bar {
+    padding-bottom: 156px;
+  }
+
+  .bottom-nav {
+    left: 8px;
+    right: 8px;
+    height: 68px;
+    padding: 0 6px 4px;
+  }
+
+  .nav-tab {
+    padding: 8px 8px;
+    gap: 3px;
+  }
+
+  .nav-label {
+    font-size: 10px;
+  }
+
+  .floating-cart {
+    width: calc(100% - 28px);
+    bottom: 84px;
+    padding: 12px 12px;
+  }
+
+  .cart-float-left {
+    gap: 10px;
+  }
+
+  .cart-float-label,
+  .cart-float-price {
+    font-size: 13px;
+  }
 }
 </style>

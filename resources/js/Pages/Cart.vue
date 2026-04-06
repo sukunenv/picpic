@@ -1,14 +1,14 @@
 <template>
   <AppLayout>
-    <div class="cart-page min-h-screen bg-gray-50 pb-28">
+    <div class="cart-page min-h-screen bg-gray-50 pb-32">
 
       <!-- ── BACK HEADER ───────────────────────────────────── -->
-    <div class="sticky top-0 z-40 bg-white/80 backdrop-blur-md px-6 pt-12 pb-4 shadow-sm flex items-center justify-between">
+    <div class="sticky top-0 z-40 bg-white/85 backdrop-blur-md px-5 sm:px-6 pt-12 pb-4 border-b border-gray-100 flex items-center justify-between">
       <div class="flex items-center gap-4">
         <button class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 transition-colors hover:bg-gray-100" @click="goBack">
           <ChevronLeftIcon class="h-6 w-6 text-primary" />
         </button>
-        <h1 class="text-primary text-xl font-semibold">Keranjang</h1>
+        <h1 class="app-page-title text-primary">Keranjang</h1>
       </div>
       <button
         v-if="cartStore.items.length > 0"
@@ -24,22 +24,22 @@
       <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-xl shadow-black/5 mb-6">
         <ShoppingCartIcon class="h-16 w-16 text-gray-200" />
       </div>
-      <h2 class="text-primary text-2xl font-bold mb-2">Keranjang Kosong</h2>
+      <h2 class="app-page-title text-primary mb-2">Keranjang Kosong</h2>
       <p class="text-gray-400 text-sm mb-8 leading-relaxed">Sepertinya kamu belum memilih minuman.<br>Yuk, eksplor menu kami!</p>
-      <button class="bg-primary text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-primary/30 w-full max-w-xs transition-transform active:scale-95" @click="goToMenu">
+      <button class="bg-primary text-white font-bold px-8 py-4 rounded-xl shadow-md shadow-primary/20 w-full max-w-xs transition-transform active:scale-95" @click="goToMenu">
         Lihat Menu Sekarang
       </button>
     </div>
 
     <!-- ── CART CONTENT ───────────────────────────────────── -->
-    <div v-else class="px-6 mt-6">
+    <div v-else class="px-5 sm:px-6 mt-5">
 
       <!-- Cart Items -->
-      <div class="space-y-4 mb-8">
+      <div class="space-y-3.5 mb-7">
         <div
           v-for="item in cartStore.items"
           :key="item.id"
-          class="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 flex gap-4 pr-3"
+          class="app-card p-4 rounded-2xl md:rounded-3xl flex gap-4 pr-3"
         >
           <img :src="item.image" :alt="item.name" class="w-20 h-20 rounded-[18px] object-cover flex-shrink-0" />
           <div class="flex-1 flex flex-col justify-between py-0.5">
@@ -82,8 +82,8 @@
       </div>
 
       <!-- ── INFORMASI ORDER ─────────────────────────────── -->
-      <div class="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
-        <h3 class="text-primary font-bold text-[15px] mb-4 flex items-center gap-2">
+      <div class="app-card-lg p-6 mb-4">
+        <h3 class="app-section-title text-primary mb-4 flex items-center gap-2">
           <div class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
              <IdentificationIcon class="h-4 w-4 text-accent" /> 
           </div>
@@ -136,54 +136,62 @@
         </div>
       </div>
 
-      <!-- ── RINGKASAN ───────────────────────────────────── -->
-      <div class="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 mb-8">
-        <h3 class="text-primary font-bold text-[15px] mb-4">Ringkasan Biaya</h3>
-        <div class="space-y-3 text-sm">
-          <div class="flex justify-between text-gray-500">
-            <span>Subtotal ({{ cartStore.totalItems }} item)</span>
-            <span class="font-medium text-primary">{{ formatPrice(cartStore.totalPrice) }}</span>
+      <!-- ── CHECKOUT PANEL ───────────────────────────────── -->
+      <div class="sticky bottom-3 sm:bottom-4 z-20">
+        <div class="app-card-lg app-glass p-4 sm:p-5">
+          <div class="flex items-center gap-2 mb-3 text-[10px] font-bold uppercase tracking-wider text-primary/60">
+            <span class="w-5 h-5 rounded-full bg-primary/15 text-primary flex items-center justify-center">1</span>
+            Keranjang
+            <span class="w-5 h-[1px] bg-primary/20"></span>
+            <span class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center">2</span>
+            Pembayaran
           </div>
-          <div class="flex justify-between text-gray-500">
-            <span>Biaya Layanan</span>
-            <span class="bg-primary/10 text-primary text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Gratis</span>
+          <h3 class="app-section-title text-primary mb-3">Ringkasan Biaya</h3>
+          <div class="space-y-2.5 text-sm mb-4">
+            <div class="flex justify-between text-gray-500">
+              <span>Subtotal ({{ cartStore.totalItems }} item)</span>
+              <span class="font-medium text-primary">{{ formatPrice(cartStore.totalPrice) }}</span>
+            </div>
+            <div class="flex justify-between text-gray-500">
+              <span>Biaya Layanan</span>
+              <span class="bg-primary/10 text-primary text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Gratis</span>
+            </div>
+            <div class="border-t border-dashed border-gray-200 mt-2 mb-1"></div>
+            <div class="flex justify-between items-center">
+              <span class="text-primary font-semibold text-sm">Total Pembayaran</span>
+              <span class="text-2xl font-bold text-[#6367FF]">{{ formatPrice(cartStore.totalPrice) }}</span>
+            </div>
           </div>
-          <div class="border-t border-dashed border-gray-200 mt-2 mb-1"></div>
-          <div class="flex justify-between items-center">
-            <span class="text-primary font-semibold text-sm">Total Pembayaran</span>
-            <span class="text-xl font-semibold text-[#6367FF]">{{ formatPrice(cartStore.totalPrice) }}</span>
+
+          <div class="space-y-3">
+            <button
+              class="app-btn-primary w-full text-[15px] py-4 flex items-center justify-center gap-2 disabled:opacity-70"
+              :disabled="submitting"
+              @click="showQrisModal = true"
+            >
+              <QrCodeIcon class="h-5 w-5" /> Bayar Sekarang (QRIS)
+            </button>
+            
+            <button
+              class="app-btn-secondary w-full text-[15px] py-3.5 flex items-center justify-center gap-2 disabled:opacity-70"
+              :disabled="submitting"
+              @click="submitOrder('cash', 'unpaid')"
+            >
+              <BanknotesIcon class="h-5 w-5" /> Bayar Nanti di Kasir
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- ── ACTION BUTTONS ──────────────────────────────── -->
-      <div class="space-y-3">
-        <button
-          class="w-full bg-primary text-white font-bold text-[15px] py-4 rounded-2xl shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] disabled:opacity-70"
-          :disabled="submitting"
-          @click="showQrisModal = true"
-        >
-          <QrCodeIcon class="h-5 w-5" /> Bayar Sekarang (QRIS)
-        </button>
-        
-        <button
-          class="w-full bg-transparent border-2 border-primary text-primary font-bold text-[15px] py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors hover:bg-gray-50 active:scale-[0.98] disabled:opacity-70"
-          :disabled="submitting"
-          @click="submitOrder('cash', 'unpaid')"
-        >
-          <BanknotesIcon class="h-5 w-5" /> Bayar Nanti di Kasir
-        </button>
-      </div>
-
       <!-- ── QRIS MODAL ────────────────────────────────────── -->
       <transition name="modal">
-        <div v-if="showQrisModal" class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-primary/40 backdrop-blur-sm" @click.self="showQrisModal = false">
-          <div class="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl modal-content">
+        <div v-if="showQrisModal" class="fixed inset-0 z-50 flex items-center justify-center px-3 sm:px-4 bg-black/40 backdrop-blur-sm" @click.self="showQrisModal = false">
+          <div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-xl modal-content">
             <div class="p-6 text-center">
               <div class="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <QrCodeIcon class="h-6 w-6 text-accent" />
               </div>
-              <h3 class="text-primary font-bold text-xl mb-1">Scan QRIS untuk Bayar</h3>
+              <h3 class="app-page-title text-primary mb-1">Scan QRIS untuk Bayar</h3>
               <p class="text-primary/70 text-sm mb-6">Scan dengan m-banking atau e-wallet apapun</p>
               
               <div class="bg-gray-50 p-4 rounded-3xl mb-6 border-2 border-gray-100 flex justify-center">
@@ -199,15 +207,15 @@
               </p>
               
               <div class="space-y-3">
-                <button 
-                  class="w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/30 disabled:opacity-70 transition-transform active:scale-[0.98]"
-                  :disabled="submitting"
-                  @click="submitOrder('qris', 'paid')"
-                >
-                  {{ submitting ? 'Memproses...' : 'Konfirmasi Sudah Bayar' }}
-                </button>
-                <button class="w-full bg-transparent border-2 border-primary text-primary hover:bg-gray-50 transition-colors font-bold py-3.5 rounded-2xl" @click="showQrisModal = false">
-                  Batal
+                <!-- Tombol Konfirmasi dinonaktifkan sementara sesuai permintaan -->
+                <div class="bg-yellow-50 border border-yellow-100 rounded-2xl p-4 mb-2">
+                  <p class="text-[11px] text-yellow-700 font-bold leading-relaxed">
+                    Pesanan akan diproses otomatis setelah Anda menunjukkan bukti bayar ke kasir.
+                  </p>
+                </div>
+                
+                <button class="w-full bg-transparent border-2 border-primary text-primary hover:bg-gray-50 transition-colors font-bold py-3.5 rounded-2xl transition-all active:scale-95" @click="showQrisModal = false">
+                  Kembali
                 </button>
               </div>
             </div>

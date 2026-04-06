@@ -1,10 +1,11 @@
 <template>
   <AdminLayout title="Kelola Menu">
     <div class="menu-admin-page">
-      <div class="page-header">
+      <div class="app-card-lg p-5 sm:p-6 mb-5 bg-gradient-to-br from-white to-[#f5f6ff] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="page-title">Kelola Menu</h2>
-          <p class="page-sub">Total: {{ menuItems.length }} item tersedia</p>
+          <p class="text-[11px] uppercase tracking-[0.16em] font-bold text-primary/50 mb-1">Menu Management</p>
+          <h2 class="text-xl sm:text-2xl font-black text-gray-900 m-0">Kelola Menu</h2>
+          <p class="text-sm text-gray-500 mt-1">Total: {{ menuItems.length }} item tersedia</p>
         </div>
         <button class="btn-add" @click="openModal()">
           <PlusIcon class="h-5 w-5" />
@@ -13,7 +14,7 @@
       </div>
 
       <!-- Search & Filters -->
-      <div class="table-controls">
+      <div class="app-card p-4 sm:p-5 mb-5">
         <div class="search-box">
           <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" />
           <input
@@ -26,7 +27,7 @@
       </div>
 
       <!-- Table -->
-      <div class="table-wrapper shadow-sm">
+      <div class="table-wrapper shadow-sm app-card-lg">
         <table class="menu-table">
           <thead>
             <tr>
@@ -87,72 +88,76 @@
       </div>
 
       <!-- Add/Edit Modal -->
-      <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-        <div class="modal-card">
-          <div class="modal-header">
-            <h3>{{ isEdit ? 'Edit Menu' : 'Tambah Menu Baru' }}</h3>
-            <button class="close-btn" @click="closeModal">✕</button>
+      <transition name="admin-modal">
+        <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h3>{{ isEdit ? 'Edit Menu' : 'Tambah Menu Baru' }}</h3>
+              <button class="close-btn" @click="closeModal">✕</button>
+            </div>
+            
+            <form @submit.prevent="submitForm" class="modal-form">
+              <div class="form-grid">
+                <div class="form-group span-2">
+                  <label>Nama Menu *</label>
+                  <input v-model="form.name" type="text" placeholder="Contoh: Cappuccino Latte" required />
+                </div>
+                
+                <div class="form-group">
+                  <label>Kategori *</label>
+                  <select v-model="form.category" required>
+                    <option value="Kopi">Kopi</option>
+                    <option value="Non-Kopi">Non-Kopi</option>
+                    <option value="Makanan">Makanan</option>
+                    <option value="Dessert">Dessert</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Harga (Rp) *</label>
+                  <input v-model="form.price" type="number" placeholder="28000" required />
+                </div>
+
+                <div class="form-group span-2">
+                  <label>Deskripsi</label>
+                  <textarea v-model="form.description" rows="3" placeholder="Jelaskan produk ini secara singkat…"></textarea>
+                </div>
+
+                <div class="form-group span-2">
+                  <label>URL Foto (Unsplash/Imgur)</label>
+                  <input v-model="form.image" type="text" placeholder="https://..." />
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn-cancel" @click="closeModal">Batal</button>
+                <button type="submit" class="btn-save" :disabled="form.processing">
+                  {{ form.processing ? 'Menyimpan…' : 'Simpan Perubahan' }}
+                </button>
+              </div>
+            </form>
           </div>
-          
-          <form @submit.prevent="submitForm" class="modal-form">
-            <div class="form-grid">
-              <div class="form-group span-2">
-                <label>Nama Menu *</label>
-                <input v-model="form.name" type="text" placeholder="Contoh: Cappuccino Latte" required />
-              </div>
-              
-              <div class="form-group">
-                <label>Kategori *</label>
-                <select v-model="form.category" required>
-                  <option value="Kopi">Kopi</option>
-                  <option value="Non-Kopi">Non-Kopi</option>
-                  <option value="Makanan">Makanan</option>
-                  <option value="Dessert">Dessert</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Harga (Rp) *</label>
-                <input v-model="form.price" type="number" placeholder="28000" required />
-              </div>
-
-              <div class="form-group span-2">
-                <label>Deskripsi</label>
-                <textarea v-model="form.description" rows="3" placeholder="Jelaskan produk ini secara singkat…"></textarea>
-              </div>
-
-              <div class="form-group span-2">
-                <label>URL Foto (Unsplash/Imgur)</label>
-                <input v-model="form.image" type="text" placeholder="https://..." />
-              </div>
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn-cancel" @click="closeModal">Batal</button>
-              <button type="submit" class="btn-save" :disabled="form.processing">
-                {{ form.processing ? 'Menyimpan…' : 'Simpan Perubahan' }}
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
+      </transition>
 
       <!-- Delete Confirmation Modal -->
-      <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
-        <div class="modal-card" style="max-width: 400px;">
-          <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
-            <h3>Konfirmasi Hapus</h3>
-            <button class="close-btn" @click="showDeleteModal = false">✕</button>
-          </div>
-          <div class="modal-form" style="padding-top: 12px;">
-            <p style="font-size: 14px; color: #4B5563; margin-bottom: 24px; line-height: 1.5;">Yakin hapus menu <strong>{{ itemToDelete?.name }}</strong>?</p>
-            <div style="display: flex; gap: 12px;">
-              <button class="btn-cancel" @click="showDeleteModal = false">Batal</button>
-              <button class="btn-save" style="background: #EF4444;" @click="procDelete">Ya, Hapus</button>
+      <transition name="admin-modal">
+        <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
+          <div class="modal-card modal-card-sm">
+            <div class="modal-header modal-header-plain">
+              <h3>Konfirmasi Hapus</h3>
+              <button class="close-btn" @click="showDeleteModal = false">✕</button>
+            </div>
+            <div class="modal-form modal-form-tight">
+              <p class="delete-copy">Yakin hapus menu <strong>{{ itemToDelete?.name }}</strong>?</p>
+              <div class="modal-footer">
+                <button class="btn-cancel" @click="showDeleteModal = false">Batal</button>
+                <button class="btn-save btn-danger" @click="procDelete">Ya, Hapus</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </transition>
     </div>
   </AdminLayout>
 </template>
@@ -395,20 +400,20 @@ function formatPrice(price) {
 
 .action-btns-row { display: flex; gap: 8px; }
 .btn-edit-icon, .btn-delete-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
-.btn-edit-icon { background: #E0F2FE; color: #0284C7; }
+.btn-edit-icon { background: #E0F2FE; color: #0284C7; border-color: #BAE6FD; }
 .btn-edit-icon:hover { background: #BAE6FD; }
-.btn-delete-icon { background: #FEE2E2; color: #DC2626; }
+.btn-delete-icon { background: #FEE2E2; color: #DC2626; border-color: #FECACA; }
 .btn-delete-icon:hover { background: #FECACA; }
 
 /* Modal */
@@ -418,7 +423,8 @@ function formatPrice(price) {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -430,24 +436,44 @@ function formatPrice(price) {
   background: white;
   width: 100%;
   max-width: 500px;
-  border-radius: 24px;
+  border-radius: 28px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  border: 1px solid #F3F4F6;
+}
+
+.modal-card-sm {
+  max-width: 420px;
 }
 
 .modal-header {
   padding: 24px;
-  background: #F9FAFB;
+  background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #F0F0F0;
 }
 
+.modal-header-plain {
+  border-bottom: none;
+  padding-bottom: 8px;
+}
+
 .modal-header h3 { font-size: 18px; font-weight: 800; color: #7C6BC4; margin: 0; }
-.close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #9CA3AF; }
+.close-btn {
+  background: #F3F4F6;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #6B7280;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+}
 
 .modal-form { padding: 24px; }
+.modal-form-tight { padding-top: 10px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .span-2 { grid-column: span 2; }
 
@@ -460,9 +486,14 @@ function formatPrice(price) {
   border-radius: 12px;
   font-size: 14px;
   outline: none;
+  background: #fff;
+  transition: all 0.2s ease;
 }
 
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #7C6BC4; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: #7C6BC4;
+  box-shadow: 0 0 0 3px rgba(124, 107, 196, 0.12);
+}
 
 .modal-footer {
   margin-top: 32px;
@@ -473,4 +504,24 @@ function formatPrice(price) {
 .btn-cancel { flex: 1; padding: 14px; background: #F3F4F6; border: none; border-radius: 12px; font-weight: 700; color: #4B5563; cursor: pointer; }
 .btn-save { flex: 2; padding: 14px; background: #7C6BC4; border: none; border-radius: 12px; font-weight: 700; color: white; cursor: pointer; }
 .btn-save:disabled { opacity: 0.7; }
+
+.btn-danger { background: #EF4444; }
+
+.delete-copy {
+  font-size: 14px;
+  color: #4B5563;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.admin-modal-enter-active,
+.admin-modal-leave-active { transition: opacity 0.24s ease; }
+.admin-modal-enter-from,
+.admin-modal-leave-to { opacity: 0; }
+.admin-modal-enter-active .modal-card { animation: adminModalPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes adminModalPop {
+  0% { transform: scale(0.95) translateY(10px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
 </style>

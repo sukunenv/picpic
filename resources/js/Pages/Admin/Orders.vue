@@ -15,9 +15,10 @@
       </transition>
 
       <!-- Page Header -->
-      <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+      <div class="app-card-lg p-5 sm:p-6 flex flex-col md:flex-row md:items-start justify-between gap-4 mb-5 bg-gradient-to-br from-white to-[#f5f6ff]">
         <div>
-          <h2 class="text-xl font-bold text-gray-900 m-0">Monitoring Pesanan</h2>
+          <p class="text-[11px] uppercase tracking-[0.16em] font-bold text-primary/50 mb-1">Order Monitoring</p>
+          <h2 class="text-xl sm:text-2xl font-black text-gray-900 m-0">Monitoring Pesanan</h2>
           <p class="text-sm text-gray-500 mt-1">Terakhir diperbarui: {{ lastUpdate }}</p>
         </div>
         <div class="flex items-center gap-3 self-start md:self-auto">
@@ -38,7 +39,7 @@
       </div>
 
       <!-- Filters & Search -->
-      <div class="flex flex-col gap-4 mb-6">
+      <div class="app-card p-4 sm:p-5 mb-5">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <!-- Tabs Scrollable -->
           <div class="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto scrollbar-hide">
@@ -68,14 +69,14 @@
         </div>
 
         <!-- Checkbox Only Unpaid -->
-        <label class="inline-flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-xl border border-gray-200 shadow-sm w-fit self-start">
+        <label class="inline-flex items-center gap-2 cursor-pointer bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 w-fit self-start mt-3">
           <input type="checkbox" v-model="searchState.only_unpaid" class="w-4 h-4 text-[#6367FF] rounded focus:ring-[#6367FF]">
           <span class="text-sm font-bold text-gray-700">Hanya Belum Bayar</span>
         </label>
       </div>
 
       <!-- Content Area -->
-      <div v-if="orders.data.length === 0" class="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
+      <div v-if="orders.data.length === 0" class="app-card-lg flex flex-col items-center justify-center py-24">
         <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
           <InboxIcon class="h-10 w-10 text-gray-300" />
         </div>
@@ -87,9 +88,9 @@
         </p>
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <!-- Order Cards -->
-        <div v-for="order in orders.data" :key="order.id" class="bg-white rounded-[20px] p-5 shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
+        <div v-for="order in orders.data" :key="order.id" class="app-card p-5 rounded-[20px] flex flex-col hover:shadow-md transition-shadow">
           <!-- Card Header -->
           <div class="flex items-start justify-between mb-3 border-b border-gray-100 pb-3">
             <div class="flex flex-col">
@@ -139,7 +140,7 @@
               <a 
                 :href="route('order.receipt', order.id)" 
                 target="_blank"
-                class="h-9 w-9 flex items-center justify-center bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors"
+                class="action-icon-btn print"
               >
                 <PrinterIcon class="h-5 w-5" />
               </a>
@@ -160,7 +161,7 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="orders.data.length > 0" class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+      <div v-if="orders.data.length > 0" class="app-card flex flex-col sm:flex-row justify-between items-center gap-4 p-4 rounded-2xl">
         <span class="text-sm text-gray-500 font-medium font-sans">
           Menampilkan <span class="font-bold text-gray-800">{{ orders.from }}</span>-<span class="font-bold text-gray-800">{{ orders.to }}</span> dari <span class="font-bold text-gray-800">{{ orders.total }}</span> pesanan
         </span>
@@ -199,7 +200,7 @@
     </div>
 
     <!-- ── PAYMENT MODAL ────────────────────────────────────── -->
-    <transition name="modal">
+    <transition name="admin-modal">
       <div v-if="showPayModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4" @click.self="showPayModal = false">
         <div class="bg-white w-full max-w-sm rounded-[24px] overflow-hidden shadow-2xl scale-100 transition-transform">
           <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
@@ -223,7 +224,7 @@
     </transition>
 
     <!-- ── SUCCESS PAYMENT MODAL ──────────────────────────────── -->
-    <transition name="modal">
+    <transition name="admin-modal">
       <div v-if="showSuccessModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-gray-900/60 backdrop-blur-md p-4">
         <div class="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl scale-100 p-8 text-center border border-white/20">
           <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -500,8 +501,29 @@ function formatTime(dateStr) { return new Date(dateStr).toLocaleTimeString('id-I
 .toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateY(-20px) scale(0.95); }
 
-.modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
-.modal-enter-active > div > div { animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-@keyframes modalPop { 0% { transform: scale(0.95) translateY(10px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+.admin-modal-enter-active, .admin-modal-leave-active { transition: opacity 0.24s ease; }
+.admin-modal-enter-from, .admin-modal-leave-to { opacity: 0; }
+.admin-modal-enter-active > div > div { animation: adminModalPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes adminModalPop { 0% { transform: scale(0.95) translateY(10px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+
+.action-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.action-icon-btn.print {
+  background: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
+
+.action-icon-btn.print:hover {
+  background: #e5e7eb;
+}
 </style>

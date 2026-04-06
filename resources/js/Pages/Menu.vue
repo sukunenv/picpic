@@ -1,22 +1,22 @@
 <template>
   <AppLayout>
-    <div class="menu-page min-h-screen bg-gray-50 pb-28">
+    <div class="menu-page min-h-screen bg-gradient-to-b from-[#f3f5ff] via-[#f7f8ff] to-[#f9fafb] pb-28">
 
       <!-- ── HEADER ───────────────────────────────────────── -->
-      <div class="sticky top-0 z-40 bg-primary px-6 pt-12 pb-6 rounded-b-[32px] shadow-lg">
+      <div class="sticky top-0 z-40 bg-gradient-to-br from-primary to-[#5059df] px-5 sm:px-6 pt-12 pb-6 rounded-b-[32px] shadow-[0_14px_36px_rgba(99,103,255,0.34)]">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-white text-2xl font-bold">Pilih Menu</h1>
-          <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+          <div class="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center border border-white/20">
             <AdjustmentsHorizontalIcon class="h-6 w-6 text-white" />
           </div>
         </div>
         <div class="relative group">
-          <MagnifyingGlassIcon class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/50 group-focus-within:text-accent transition-colors" />
+          <MagnifyingGlassIcon class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/55 group-focus-within:text-white transition-colors" />
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Cari kopi, teh, atau snack..."
-            class="w-full bg-white/10 border-none rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/40 focus:ring-2 focus:ring-accent transition-all text-sm font-medium"
+            class="w-full bg-white/15 border border-white/20 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/45 focus:ring-2 focus:ring-white/40 transition-all text-sm font-medium"
             @input="debouncedFetch"
           />
           <button v-if="searchQuery" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white" @click="clearSearch">
@@ -27,14 +27,14 @@
 
       <!-- ── KATEGORI ───────────────────────────────────────── -->
       <div class="mt-6 mb-4">
-        <div class="flex gap-3 overflow-x-auto px-6 hide-scrollbar">
+        <div class="flex gap-3 overflow-x-auto px-5 sm:px-6 hide-scrollbar">
           <button
             v-for="cat in categories"
             :key="cat.id"
             class="px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 border"
-            :class="activeCategory === cat.id 
-              ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105' 
-              : 'bg-white border-gray-100 text-gray-400'"
+              :class="activeCategory === cat.id 
+                ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105' 
+                : 'bg-white border-gray-100 text-gray-500 shadow-sm'"
             @click="setCategory(cat.id)"
           >
             {{ cat.label }}
@@ -43,7 +43,7 @@
       </div>
 
       <!-- Result count -->
-      <div class="px-6 mb-4 flex items-center justify-between">
+      <div class="px-5 sm:px-6 mb-4 flex items-center justify-between">
         <p class="text-gray-400 text-[11px] font-bold uppercase tracking-wider">
           <span v-if="!loading">{{ filteredItems.length }} Menu Tersedia</span>
           <span v-else>Memperbarui daftar...</span>
@@ -51,7 +51,7 @@
       </div>
 
       <!-- ── GRID MENU ──────────────────────────────────────── -->
-      <div class="px-6 grid grid-cols-2 gap-4">
+      <div class="px-5 sm:px-6 grid grid-cols-2 gap-4">
 
         <!-- Skeleton loading -->
         <template v-if="loading">
@@ -62,13 +62,13 @@
           <div
             v-for="item in filteredItems"
             :key="item.id"
-            class="menu-card bg-white rounded-[28px] overflow-hidden shadow-card-menu hover:shadow-lg transition-all duration-500 flex flex-col group border-none"
+            class="menu-card app-card rounded-[24px] overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col group"
             @click="addToCart(item)"
           >
             <div class="relative aspect-square overflow-hidden">
                <img :src="item.image" :alt="item.name" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-               <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
-               <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-tight">
+               <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/25 to-transparent"></div>
+               <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-primary text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-tight border border-white">
                  {{ item.category }}
                </span>
                <div v-if="item.is_popular" class="absolute top-2 right-2 bg-pink-light p-1.5 rounded-lg shadow-md">
@@ -90,7 +90,7 @@
                   </div>
                   <p class="text-primary font-black text-sm">{{ formatPrice(item.price) }}</p>
                 </div>
-                <button class="bg-accent w-9 h-9 rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20 group-hover:rotate-90 transition-transform duration-300">
+                <button class="bg-accent w-9 h-9 rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20 group-hover:scale-105 transition-transform duration-300">
                   <PlusIcon class="h-5 w-5 text-white" />
                 </button>
               </div>

@@ -1,31 +1,32 @@
 <template>
   <AppLayout>
-    <div class="home-page min-h-screen bg-gray-50 pb-28">
+    <div class="home-page min-h-screen bg-gradient-to-b from-[#f3f5ff] via-[#f7f8ff] to-[#f9fafb] pb-28">
       
       <!-- ── HEADER & SEARCH ────────────────────────────────── -->
-      <div class="relative pb-6">
-        <!-- Header ungu dengan curve bawah -->
-        <div class="bg-primary px-6 pt-12 pb-16 rounded-b-[40px]">
-          
-          <!-- Greeting -->
-          <div class="flex justify-between items-center mb-2">
+      <div class="relative pb-4">
+        <div class="relative overflow-hidden bg-gradient-to-br from-primary to-[#5059df] px-5 sm:px-6 pt-12 pb-14 rounded-b-[34px] shadow-[0_16px_40px_rgba(99,103,255,0.34)]">
+          <div class="absolute -right-10 -top-8 w-36 h-36 rounded-full bg-white/10"></div>
+          <div class="absolute -left-10 -bottom-14 w-36 h-36 rounded-full bg-white/10"></div>
+
+          <div class="relative flex justify-between items-center mb-3">
             <div>
-              <h1 class="text-white text-xl font-semibold leading-tight">
-                Selamat datang,
-              </h1>
-              <p class="text-white/80 text-sm font-medium mt-0.5">
-                Mau ngopi apa hari ini? ☕
-              </p>
+              <p class="text-[10px] tracking-[0.14em] uppercase font-bold text-white/70 mb-1">Good day</p>
+              <h1 class="app-page-title text-white">Selamat datang,</h1>
+              <p class="text-white/85 text-sm font-medium mt-0.5">Pilih menu favoritmu hari ini.</p>
             </div>
-            <div class="rounded-full bg-white p-1 border-2 border-white/30 shadow-md">
-              <img src="/logo.png" class="w-10 h-10 rounded-full object-contain">
+            <div class="bg-white/95 rounded-full p-1 border-2 border-white/40 shadow-lg">
+              <img src="/logo.png" class="w-10 h-10 rounded-full object-contain" alt="Logo">
             </div>
           </div>
 
-          <!-- Search bar overlap (push down) -->
-          <div class="translate-y-10" @click="goToMenu">
-            <div class="bg-white rounded-2xl shadow-xl flex items-center px-4 py-4 gap-3 cursor-pointer border-gray-100 border transition-transform active:scale-[0.98]">
-              <MagnifyingGlassIcon class="text-primary/60 w-5 h-5"/>
+          <div class="relative flex gap-2 mb-4">
+            <div class="px-3 py-1.5 text-[11px] font-bold rounded-full bg-white/15 text-white border border-white/20">Fast Delivery</div>
+            <div class="px-3 py-1.5 text-[11px] font-bold rounded-full bg-white/15 text-white border border-white/20">Fresh Brew</div>
+          </div>
+
+          <div class="relative" @click="goToMenu">
+            <div class="bg-white/95 rounded-2xl shadow-xl flex items-center px-4 py-3.5 gap-3 cursor-pointer border border-white/40 transition-transform active:scale-[0.98]">
+              <MagnifyingGlassIcon class="text-primary/60 w-5 h-5" />
               <span class="flex-1 outline-none text-sm text-primary/60 font-medium">Cari minuman atau snack...</span>
             </div>
           </div>
@@ -33,9 +34,9 @@
       </div>
 
       <!-- ── PROMO BANNER ──────────────────────────────────────── -->
-      <div class="px-6 mt-2 relative overflow-hidden h-52 sm:h-60 group">
+      <div class="px-5 sm:px-6 mt-4 relative overflow-hidden h-56 sm:h-60 group">
         <!-- Loading State -->
-        <div v-if="loadingBanners" class="w-full h-full bg-gray-200 animate-pulse rounded-[32px]"></div>
+        <div v-if="loadingBanners" class="w-full h-full bg-gray-200 animate-pulse rounded-2xl md:rounded-3xl"></div>
 
         <!-- Banner Content -->
         <div v-else class="w-full h-full relative">
@@ -43,7 +44,7 @@
             <div v-for="(banner, index) in banners" 
                  :key="banner.id"
                  v-show="currentBanner === index"
-                 class="absolute inset-0 w-full h-full rounded-[32px] overflow-hidden shadow-xl shadow-primary/10"
+                 class="absolute inset-0 w-full h-full rounded-3xl overflow-hidden shadow-[0_18px_42px_rgba(15,23,42,0.18)]"
             >
               <!-- Background Image / Gradient Fallback -->
               <div v-if="banner.image" class="absolute inset-0">
@@ -51,16 +52,16 @@
                      class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
                      :alt="banner.title"
                 >
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/78 via-black/22 to-transparent"></div>
               </div>
               <div v-else class="absolute inset-0 bg-gradient-to-br from-primary via-[#7C6BC4] to-[#4B3FA0]"></div>
 
               <!-- Content Overlay -->
               <div class="absolute inset-0 flex flex-col justify-end p-6 pb-8">
-                <h2 class="text-white text-xl sm:text-2xl font-black mb-1 drop-shadow-md leading-tight">{{ banner.title }}</h2>
-                <p class="text-white/90 text-[11px] sm:text-xs font-medium mb-4 line-clamp-2 drop-shadow-md max-w-[80%]">{{ banner.description }}</p>
-                <div v-if="banner.button_text" 
-                     class="self-start px-5 py-2.5 bg-white text-primary rounded-xl font-bold text-[11px] shadow-lg shadow-black/10 active:scale-95 transition-transform"
+                <h2 class="text-white text-[22px] sm:text-3xl font-black mb-1 drop-shadow-md leading-tight">{{ banner.title }}</h2>
+                <p class="text-white/90 text-xs sm:text-sm font-medium mb-4 line-clamp-2 drop-shadow-md max-w-[88%]">{{ banner.description }}</p>
+              <div v-if="banner.button_text"
+                     class="self-start px-5 py-2.5 bg-white text-primary rounded-xl font-bold text-[11px] shadow-md shadow-black/10 active:scale-95 transition-transform"
                      @click="handleBannerClick(banner.button_url)"
                 >
                   {{ banner.button_text }}
@@ -69,12 +70,12 @@
             </div>
 
             <!-- Empty State / Default Fallback -->
-            <div v-if="banners.length === 0" key="fallback" class="w-full h-full bg-gradient-to-br from-primary via-[#7C6BC4] to-[#4B3FA0] rounded-[32px] flex flex-col items-center justify-center p-6 text-center">
+            <div v-if="banners.length === 0" key="fallback" class="w-full h-full bg-gradient-to-br from-primary via-[#7C6BC4] to-[#4B3FA0] rounded-2xl flex flex-col items-center justify-center p-6 text-center">
               <div class="bg-white/20 p-4 rounded-full mb-4 backdrop-blur-md ring-8 ring-white/5">
                 <img src="/logo.png" class="w-16 h-16 object-contain" alt="Picpic">
               </div>
               <p class="text-white/60 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">Stay tuned</p>
-              <h2 class="text-white text-xl font-bold">kumpul mencerita ☕</h2>
+              <h2 class="text-white text-xl font-bold">Kumpul dan bercerita</h2>
             </div>
           </transition-group>
 
@@ -90,17 +91,54 @@
         </div>
       </div>
 
+      <!-- ── FEATURED SHOWCASE ───────────────────────────────── -->
+      <div v-if="featuredItem" class="px-5 sm:px-6 mt-6">
+        <div class="app-card-lg app-pressable p-4 sm:p-5 shadow-[0_14px_35px_rgba(99,103,255,0.12)]">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <p class="text-[10px] tracking-[0.18em] uppercase text-primary/50 font-bold">Pilihan Hari Ini</p>
+              <h3 class="app-section-title text-primary mt-1">{{ featuredItem.name }}</h3>
+            </div>
+            <span class="bg-primary/10 text-primary text-[11px] font-bold px-3 py-1 rounded-full">
+              {{ formatPrice(featuredItem.price) }}
+            </span>
+          </div>
+
+          <div class="bg-gradient-to-br from-[#f2f4ff] to-[#eef1ff] rounded-2xl p-4 flex items-center gap-4 relative overflow-hidden border border-white">
+            <div class="absolute -right-10 -top-10 w-28 h-28 rounded-full bg-primary/10"></div>
+            <img
+              :src="featuredItem.image"
+              :alt="featuredItem.name"
+              class="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-2xl shadow-md shadow-primary/10 app-pressable"
+            />
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-3">
+                {{ featuredItem.description || 'Rasa seimbang dengan aroma khas, cocok untuk menemani aktivitasmu.' }}
+              </p>
+              <div class="flex items-center gap-2">
+                <button class="app-btn-primary px-4 py-2 text-xs shadow-lg shadow-primary/30" @click.stop="addToCart(featuredItem)">
+                  Order Sekarang
+                </button>
+                <button class="bg-white border border-gray-200 text-primary px-3 py-2 rounded-xl text-xs font-semibold" @click.stop="goToMenu">
+                  Lihat Menu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ── KATEGORI ───────────────────────────────────────── -->
       <div class="mt-10">
-        <div class="px-6 mb-4 flex items-center justify-between">
-          <h3 class="text-primary font-semibold text-base">Kategori Kopi</h3>
+        <div class="px-5 sm:px-6 mb-4 flex items-center justify-between">
+          <h3 class="app-section-title text-primary">Kategori Menu</h3>
           <button class="text-accent font-bold text-xs">Lihat Semua</button>
         </div>
-        <div class="flex gap-4 overflow-x-auto px-6 hide-scrollbar">
+        <div class="flex gap-3 overflow-x-auto px-5 sm:px-6 hide-scrollbar">
           <div v-for="cat in categories" :key="cat.id" class="flex flex-col items-center gap-2 flex-shrink-0" @click="selectCategory(cat.id)">
             <div 
-              class="w-16 h-16 rounded-full flex items-center justify-center p-4 transition duration-300"
-              :class="activeCategory === cat.id ? 'bg-primary shadow-lg shadow-primary/30 scale-110' : 'bg-white shadow-sm'"
+              class="w-16 h-16 rounded-2xl flex items-center justify-center p-4 transition duration-300 border"
+              :class="activeCategory === cat.id ? 'bg-primary shadow-xl shadow-primary/30 scale-105 border-primary' : 'bg-white shadow-md border-gray-100'"
             >
               <component :is="cat.icon" class="w-full h-full" :class="activeCategory === cat.id ? 'text-white' : 'text-primary/80'" />
             </div>
@@ -110,14 +148,14 @@
       </div>
 
       <!-- ── POPULER ─────────────────────────────────── -->
-      <div class="mt-10 mb-8">
-        <div class="px-6 mb-4 flex items-center justify-between">
-          <h3 class="text-primary font-semibold text-base">Menu Terlaris 🔥</h3>
+      <div class="mt-10 mb-7">
+        <div class="px-5 sm:px-6 mb-4 flex items-center justify-between">
+          <h3 class="app-section-title text-primary">Menu Terlaris</h3>
         </div>
-        <div class="flex gap-4 overflow-x-auto px-6 hide-scrollbar pb-4 -mx-1">
-          <div v-for="item in popularItems" :key="item.id" class="popular-card flex-shrink-0 bg-white p-4 rounded-3xl w-40 sm:w-44 shadow-card-menu relative group" @click="addToCart(item)">
+        <div class="flex gap-4 overflow-x-auto px-5 sm:px-6 hide-scrollbar pb-4 -mx-1">
+          <div v-for="item in popularItems" :key="item.id" class="popular-card app-card flex-shrink-0 p-4 rounded-2xl md:rounded-3xl w-40 sm:w-44 relative group" @click="addToCart(item)">
             <div class="relative mb-4">
-              <img :src="item.image" :alt="item.name" class="w-28 h-28 sm:w-32 sm:h-32 mx-auto object-cover rounded-2xl group-hover:scale-105 transition duration-500">
+              <img :src="item.image" :alt="item.name" class="w-28 h-28 sm:w-32 sm:h-32 mx-auto object-cover rounded-2xl md:rounded-3xl group-hover:scale-105 transition duration-500">
               <div class="absolute -top-1 -right-1 bg-accent p-2 rounded-xl shadow-md transform rotate-12">
                 <StarIcon class="h-3 w-3 text-white fill-current" />
               </div>
@@ -126,7 +164,7 @@
               <h4 class="text-primary font-bold text-sm truncate">{{ item.name }}</h4>
               <p class="text-primary font-bold text-xs">{{ formatPrice(item.price) }}</p>
             </div>
-            <button class="absolute bottom-4 right-4 bg-accent w-8 h-8 rounded-xl flex items-center justify-center shadow-lg shadow-accent/20 group-hover:scale-110 transition duration-300">
+            <button class="absolute bottom-4 right-4 bg-accent w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-accent/20 group-hover:scale-110 transition duration-300">
               <PlusIcon class="h-5 w-5 text-white" />
             </button>
           </div>
@@ -136,13 +174,13 @@
       </div>
 
       <!-- ── SEMUA MENU ─────────────────────────────────────── -->
-      <div class="px-6 mt-4">
-        <h3 class="text-primary font-semibold text-base mb-4">Semua Menu</h3>
-        <div class="space-y-4">
-          <div v-for="item in filteredItems.slice(0, 4)" :key="item.id" class="flex bg-white p-3 rounded-2xl shadow-card-menu border-none gap-4 items-center" @click="addToCart(item)">
+      <div class="px-5 sm:px-6 mt-4">
+        <h3 class="app-section-title text-primary mb-4">Semua Menu</h3>
+        <div class="space-y-3">
+          <div v-for="item in filteredItems.slice(0, 4)" :key="item.id" class="app-card flex p-3.5 rounded-2xl gap-4 items-center" @click="addToCart(item)">
             <img :src="item.image" :alt="item.name" class="w-20 h-20 rounded-xl object-cover flex-shrink-0">
             <div class="flex-1 min-w-0 py-1">
-              <h4 class="text-primary font-bold text-sm truncate mb-0.5">{{ item.name }}</h4>
+              <h4 class="text-primary font-bold text-sm truncate mb-1">{{ item.name }}</h4>
               <p class="text-gray-400 text-[10px] line-clamp-1 mb-2">{{ item.description }}</p>
               <div class="flex items-center gap-2">
                  <span class="text-[#6367FF] font-semibold text-sm">{{ formatPrice(item.price) }}</span>
@@ -156,7 +194,7 @@
             </button>
           </div>
           
-          <button @click="goToMenu" class="w-full bg-primary/10 text-primary font-bold text-[13px] py-4 rounded-2xl mt-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+          <button @click="goToMenu" class="w-full bg-primary/10 text-primary font-bold text-[13px] py-4 rounded-xl mt-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
             Lihat Semua Menu <ArrowRightIcon class="h-4 w-4 stroke-2" />
           </button>
         </div>
@@ -260,6 +298,11 @@ const categories = [
 const popularItems = computed(() =>
   allMenuItems.value.filter(i => i.is_popular).slice(0, 6)
 );
+
+const featuredItem = computed(() => {
+  if (popularItems.value.length > 0) return popularItems.value[0];
+  return allMenuItems.value[0] || null;
+});
 
 const filteredItems = computed(() => {
   if (activeCategory.value === 'Semua') return allMenuItems.value;
