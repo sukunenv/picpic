@@ -68,6 +68,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     
     // Orders Management
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders');
+    Route::get('/kasir', [AdminOrderController::class, 'kasir'])->name('admin.kasir');
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status');
     Route::post('/orders/{order}/payment', [AdminOrderController::class, 'updatePayment'])->name('admin.orders.payment');
     

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -50,6 +51,15 @@ class OrderController extends Controller
             'orders' => $orders,
             'filters' => $request->only('search', 'status', 'only_unpaid', 'per_page'),
             'counts' => $counts
+        ]);
+    }
+
+    public function kasir()
+    {
+        $menuItems = MenuItem::available()->orderBy('name')->get();
+
+        return Inertia::render('Admin/Kasir', [
+            'menuItems' => $menuItems
         ]);
     }
 

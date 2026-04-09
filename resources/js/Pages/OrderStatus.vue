@@ -78,7 +78,7 @@
       <!-- ── ACTIONS ──────────────────────────────────────── -->
       <div class="px-5 sm:px-6 pb-12 sticky bottom-3 sm:bottom-4">
         <button 
-          @click="router.visit('/')" 
+          @click="goHome" 
           class="app-btn-primary w-full py-4 text-base flex items-center justify-center gap-2"
         >
           <HomeIcon class="h-5 w-5" />
@@ -93,7 +93,8 @@
 </template>
 
 <script setup>
-import { router } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { 
   CheckIcon, 
@@ -104,6 +105,17 @@ import {
 const props = defineProps({
   order: Object
 });
+
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+const goHome = () => {
+  if (user.value && user.value.is_admin) {
+    router.visit('/admin/dashboard');
+  } else {
+    router.visit('/');
+  }
+};
 
 function formatPrice(price) {
   return 'Rp ' + Number(price).toLocaleString('id-ID');

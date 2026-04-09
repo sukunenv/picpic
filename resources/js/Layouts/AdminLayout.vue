@@ -94,7 +94,8 @@ import {
   ClipboardDocumentListIcon, 
   QueueListIcon,
   ArrowLeftStartOnRectangleIcon,
-  PhotoIcon
+  PhotoIcon,
+  BanknotesIcon
 } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
@@ -105,6 +106,7 @@ const page = usePage();
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: Squares2X2Icon },
+  { href: '/admin/kasir',     label: 'Kasir',     icon: BanknotesIcon },
   { href: '/admin/orders',    label: 'Orders',    icon: ClipboardDocumentListIcon },
   { href: '/admin/menu',      label: 'Menu',      icon: QueueListIcon },
   { href: '/admin/banners',   label: 'Banners',   icon: PhotoIcon },

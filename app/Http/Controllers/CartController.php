@@ -22,6 +22,7 @@ class CartController extends Controller
             'items.*.menu_item_id' => 'required|exists:menu_items,id',
             'items.*.quantity'     => 'required|integer|min:1',
             'items.*.note'         => 'nullable|string',
+            'status'               => 'nullable|in:pending,processing,done',
         ]);
  
         DB::beginTransaction();
@@ -48,7 +49,7 @@ class CartController extends Controller
                 'table_number'   => $validated['table_number'] ?? null,
                 'payment_method' => $validated['payment_method'],
                 'payment_status' => $validated['payment_status'],
-                'status'         => 'pending',
+                'status'         => $validated['status'] ?? 'pending',
                 'total_price'    => $total,
             ]);
  
