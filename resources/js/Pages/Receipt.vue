@@ -2,12 +2,10 @@
   <div class="receipt-container">
     <div class="no-print actions">
       <button @click="backToHome" class="btn-back">← Kembali</button>
-      <a :href="`rawbt:` + receiptUrl" class="btn-print">
-        Cetak Struk
-      </a>
+      <button @click="printReceipt" class="btn-print">Cetak Struk</button>
     </div>
 
-    <div class="receipt-content" id="printable-receipt">
+    <div class="receipt-content" id="receipt-content">
       <div class="header">
         <img src="/logo.png" class="receipt-logo" alt="Logo">
         <h1 class="shop-name">Kedai PICPIC</h1>
@@ -122,8 +120,6 @@ const formatDate = (dateStr) => {
   });
 };
 
-const receiptUrl = window.location.href;
-
 const backToHome = () => {
     if (window.history.length > 1) {
         window.history.back();
@@ -132,9 +128,19 @@ const backToHome = () => {
     }
 };
 
+const printReceipt = () => {
+  const el = document.getElementById('receipt-content');
+  if (!el) return;
+  
+  const text = el.innerText;
+  const encodedData = encodeURIComponent(text);
+  const intentUrl = `intent://print#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;S.rawbt.intent.EXTRA_PRINT_JOB_NAME=Struk;S.rawbt.intent.EXTRA_DATA=${encodedData};end`;
+  
+  window.location.href = intentUrl;
+};
+
 onMounted(() => {
-  // Autoprint removed for RawBT to avoid infinite loops/confusion
-  // as it requires user interaction for the protocol link
+  // Manual print required via RawBT Intent
 });
 </script>
 
