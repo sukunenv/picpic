@@ -8,7 +8,7 @@
         <button class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 transition-colors hover:bg-gray-100" @click="goBack">
           <ChevronLeftIcon class="h-6 w-6 text-primary" />
         </button>
-        <h1 class="app-page-title text-primary">Keranjang</h1>
+        <h1 class="app-page-title text-primary">Keranjang Belanja</h1>
       </div>
       <button
         v-if="cartStore.items.length > 0"
@@ -82,8 +82,8 @@
       </div>
 
       <!-- ── INFORMASI ORDER ─────────────────────────────── -->
-      <div class="app-card-lg p-6 mb-4">
-        <h3 class="app-section-title text-primary mb-4 flex items-center gap-2">
+      <div class="app-card-lg p-6 mb-6">
+        <h3 class="app-section-title text-primary mb-5 flex items-center gap-2">
           <div class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
              <IdentificationIcon class="h-4 w-4 text-accent" /> 
           </div>
@@ -107,13 +107,12 @@
 
           <!-- Nomor Meja -->
           <div>
-            <label class="block text-sm font-medium text-gray-600 mb-2">Nomor Meja *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Nomor Meja</label>
             <input 
               type="text" 
               v-model="table_number" 
               class="w-full px-4 py-3.5 bg-gray-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-accent/20 transition-all font-medium" 
-              placeholder="Contoh: 05"
-              required
+              placeholder="Masukkan nomor meja (opsional)"
             />
           </div>
 
@@ -131,55 +130,50 @@
                 placeholder="8xxxxxxxxxx"
               />
             </div>
-            <p class="text-xs text-gray-400 mt-2 ml-1">Untuk menerima struk digital dan status pesanan via WA</p>
+            <p class="text-xs text-gray-400 mt-2 ml-1 text-balance">Untuk menerima struk digital dan status pesanan via WA</p>
           </div>
         </div>
       </div>
 
-      <!-- ── CHECKOUT PANEL ───────────────────────────────── -->
-      <div class="sticky bottom-3 sm:bottom-4 z-20">
-        <div class="app-card-lg app-glass p-4 sm:p-5">
-          <div class="flex items-center gap-2 mb-3 text-[10px] font-bold uppercase tracking-wider text-primary/60">
-            <span class="w-5 h-5 rounded-full bg-primary/15 text-primary flex items-center justify-center">1</span>
-            Keranjang
-            <span class="w-5 h-[1px] bg-primary/20"></span>
-            <span class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center">2</span>
-            Pembayaran
+      <!-- ── RINGKASAN BIAYA ──────────────────────────────── -->
+      <div class="app-card-lg p-6 mb-8">
+        <h3 class="app-section-title text-primary mb-4">Ringkasan Biaya</h3>
+        <div class="space-y-3.5 text-sm">
+          <div class="flex justify-between text-gray-500">
+            <span>Subtotal ({{ cartStore.totalItems }} item)</span>
+            <span class="font-bold text-primary">{{ formatPrice(cartStore.totalPrice) }}</span>
           </div>
-          <h3 class="app-section-title text-primary mb-3">Ringkasan Biaya</h3>
-          <div class="space-y-2.5 text-sm mb-4">
-            <div class="flex justify-between text-gray-500">
-              <span>Subtotal ({{ cartStore.totalItems }} item)</span>
-              <span class="font-medium text-primary">{{ formatPrice(cartStore.totalPrice) }}</span>
-            </div>
-            <div class="flex justify-between text-gray-500">
-              <span>Biaya Layanan</span>
-              <span class="bg-primary/10 text-primary text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Gratis</span>
-            </div>
-            <div class="border-t border-dashed border-gray-200 mt-2 mb-1"></div>
+          <div class="flex justify-between text-gray-500">
+            <span>Biaya Layanan</span>
+            <span class="bg-primary/10 text-primary text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Gratis</span>
+          </div>
+          <div class="border-t border-dashed border-gray-200 pt-3 mt-1">
             <div class="flex justify-between items-center">
-              <span class="text-primary font-semibold text-sm">Total Pembayaran</span>
-              <span class="text-2xl font-bold text-[#6367FF]">{{ formatPrice(cartStore.totalPrice) }}</span>
+              <span class="text-primary font-semibold">Total Pembayaran</span>
+              <span class="text-2xl font-black text-[#6367FF]">{{ formatPrice(cartStore.totalPrice) }}</span>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div class="space-y-3">
-            <button
-              class="app-btn-primary w-full text-[15px] py-4 flex items-center justify-center gap-2 disabled:opacity-70"
-              :disabled="submitting"
-              @click="showQrisModal = true"
-            >
-              <QrCodeIcon class="h-5 w-5" /> Bayar Sekarang (QRIS)
-            </button>
-            
-            <button
-              class="app-btn-secondary w-full text-[15px] py-3.5 flex items-center justify-center gap-2 disabled:opacity-70"
-              :disabled="submitting"
-              @click="submitOrder('cash', 'unpaid')"
-            >
-              <BanknotesIcon class="h-5 w-5" /> Bayar Nanti di Kasir
-            </button>
-          </div>
+      <!-- ── CHECKOUT ACTIONS (Sticky) ────────────────────── -->
+      <div class="sticky bottom-3 sm:bottom-6 z-20">
+        <div class="bg-white/90 backdrop-blur-lg p-3 rounded-[24px] shadow-[0_-10px_40px_rgba(0,0,0,0.08)] border border-white/50 space-y-2.5">
+          <button
+            class="app-btn-primary w-full text-[15px] py-4 flex items-center justify-center gap-2 shadow-lg shadow-primary/25 disabled:opacity-70"
+            :disabled="submitting"
+            @click="showQrisModal = true"
+          >
+            <QrCodeIcon class="h-5 w-5" /> Bayar Sekarang (QRIS)
+          </button>
+          
+          <button
+            class="app-btn-secondary w-full text-[15px] py-3.5 flex items-center justify-center gap-2 border-2 border-primary/10 hover:bg-primary/5 disabled:opacity-70"
+            :disabled="submitting"
+            @click="submitOrder('cash', 'unpaid')"
+          >
+            <BanknotesIcon class="h-5 w-5" /> Bayar Nanti di Kasir
+          </button>
         </div>
       </div>
 

@@ -1,14 +1,16 @@
 <template>
   <div class="receipt-container">
     <div class="no-print actions">
-      <button @click="backToHome" class="btn-back">← Kembali ke Dashboard</button>
-      <button @click="printReceipt" class="btn-print">Cetak Lagi</button>
+      <button @click="backToHome" class="btn-back">← Kembali</button>
+      <a :href="`rawbt:` + receiptUrl" class="btn-print">
+        Cetak Struk
+      </a>
     </div>
 
     <div class="receipt-content" id="printable-receipt">
       <div class="header">
         <img src="/logo.png" class="receipt-logo" alt="Logo">
-        <h1 class="shop-name">PICPIC CAFE</h1>
+        <h1 class="shop-name">Kedai PICPIC</h1>
         <p class="tagline">kumpul mencerita</p>
       </div>
 
@@ -27,9 +29,7 @@
         <div class="info-row">
           <span>Nama: {{ order.customer_name }}</span>
         </div>
-        <div v-if="order.customer_phone" class="info-row">
-          <span>WA: {{ order.customer_phone }}</span>
-        </div>
+
       </div>
 
       <div class="divider">--------------------------------</div>
@@ -78,13 +78,15 @@
         <div class="footer-info">
           <p class="address">Wonosari, Gunungkidul</p>
           <p>IG: @picpic.cafe</p>
-          <p class="website">picpic-production.up.railway.app</p>
+          <p class="website">kedaipicpic.com</p>
         </div>
         
         <div class="divider-dot">................................</div>
         
         <div class="footer-thanks">
-          <p>Buka: Senin-Minggu 08.00-22.00</p>
+          <p>Jam buka:</p>
+          <p>Minggu-Kamis 16.00-23.00 WIB</p>
+          <p>Jumat-Sabtu 16.00-00.00 WIB</p>
           <p>Terima kasih sudah berkunjung!</p>
           <p>Sampai jumpa lagi 😊</p>
         </div>
@@ -120,6 +122,8 @@ const formatDate = (dateStr) => {
   });
 };
 
+const receiptUrl = window.location.href;
+
 const backToHome = () => {
     if (window.history.length > 1) {
         window.history.back();
@@ -128,14 +132,9 @@ const backToHome = () => {
     }
 };
 
-const printReceipt = () => {
-  window.print();
-};
-
 onMounted(() => {
-  setTimeout(() => {
-    window.print();
-  }, 500);
+  // Autoprint removed for RawBT to avoid infinite loops/confusion
+  // as it requires user interaction for the protocol link
 });
 </script>
 
