@@ -151,7 +151,7 @@ onMounted(() => {
 }
 
 .receipt-content {
-  width: 58mm;
+  width: 80mm;
   padding: 4mm 3mm;
   background: white;
   font-size: 11px;
@@ -354,7 +354,13 @@ onMounted(() => {
 @media print {
   @page {
     margin: 0;
-    size: 58mm auto;
+    size: 80mm auto;
+  }
+
+  body {
+    width: 80mm;
+    margin: 0;
+    padding: 0;
   }
 
   .receipt-container {
@@ -372,8 +378,8 @@ onMounted(() => {
   }
 
   .receipt-content {
-    width: 58mm;
-    max-width: 58mm;
+    width: 80mm;
+    max-width: 80mm;
     padding: 2mm 3mm;
     margin: 0 auto;
     box-shadow: none;
