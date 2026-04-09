@@ -5,7 +5,7 @@
       <button @click="printReceipt" class="btn-print">Cetak Struk</button>
     </div>
 
-    <div class="receipt-content" id="receipt-content">
+    <div class="receipt-content" id="printable-receipt">
       <div class="header">
         <img src="/logo.png" class="receipt-logo" alt="Logo">
         <h1 class="shop-name">Kedai PICPIC</h1>
@@ -129,18 +129,13 @@ const backToHome = () => {
 };
 
 const printReceipt = () => {
-  const el = document.getElementById('receipt-content');
-  if (!el) return;
-  
-  const text = el.innerText;
-  const encodedData = encodeURIComponent(text);
-  const intentUrl = `intent://print#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;S.rawbt.intent.EXTRA_PRINT_JOB_NAME=Struk;S.rawbt.intent.EXTRA_DATA=${encodedData};end`;
-  
-  window.location.href = intentUrl;
+  window.print();
 };
 
 onMounted(() => {
-  // Manual print required via RawBT Intent
+  setTimeout(() => {
+    window.print();
+  }, 500);
 });
 </script>
 
