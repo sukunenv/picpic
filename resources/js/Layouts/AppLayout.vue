@@ -1,7 +1,7 @@
 <template>
   <div class="app-shell bg-[#eef2f3] min-h-screen">
     <Head :title="title" />
-    <div class="max-w-lg mx-auto bg-white min-h-screen md:min-h-[96vh] md:my-4 md:rounded-[28px] md:shadow-2xl md:ring-1 md:ring-black/5 relative flex flex-col overflow-hidden">
+    <div class="max-w-lg mx-auto w-full bg-white h-[100dvh] md:h-[96vh] md:my-[2vh] md:rounded-[28px] md:shadow-2xl md:ring-1 md:ring-black/5 relative flex flex-col">
       <!-- Page Content -->
       <main class="page-content flex-1 overflow-y-auto" :class="{ 'has-cart-bar': cartStore.totalItems > 0 && showBottomNav }">
         <slot />
@@ -126,10 +126,12 @@ function formatPrice(price) {
 
 /* Bottom Nav */
 .bottom-nav {
-  position: absolute;
+  position: fixed;
   bottom: 10px;
-  left: 12px;
-  right: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: calc(512px - 24px); /* max-w-lg = 512px */
   height: 72px;
   background: rgba(255, 255, 255, 0.96);
   display: flex;
@@ -205,11 +207,12 @@ function formatPrice(price) {
 
 /* Floating Cart */
 .floating-cart {
-  position: absolute;
+  position: fixed;
   bottom: 92px;
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 48px);
+  max-width: calc(512px - 48px); /* max-w-lg = 512px */
   background: linear-gradient(135deg, #6367ff, #7c6bc4);
   border-radius: 16px;
   padding: 14px 16px;
@@ -288,8 +291,7 @@ function formatPrice(price) {
   }
 
   .bottom-nav {
-    left: 8px;
-    right: 8px;
+    width: calc(100% - 16px);
     height: 68px;
     padding: 0 6px 4px;
   }

@@ -40,47 +40,49 @@
 
         <!-- Banner Content -->
         <div v-else class="w-full h-full relative">
-          <transition-group name="slide-fade">
-            <div v-for="(banner, index) in banners" 
-                 :key="banner.id"
-                 v-show="currentBanner === index"
-                 class="absolute inset-0 w-full h-full rounded-3xl overflow-hidden shadow-[0_18px_42px_rgba(15,23,42,0.18)]"
-            >
-              <!-- Background Image / Gradient Fallback -->
-              <div v-if="banner.image" class="absolute inset-0">
-                <img :src="banner.image" 
-                     class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
-                     :alt="banner.title"
+          <div v-if="banners.length > 0" class="w-full h-full relative">
+            <template v-for="(banner, index) in banners" :key="banner.id">
+              <transition name="slide-fade">
+                <div 
+                  v-if="currentBanner === index"
+                  class="absolute inset-0 w-full h-full rounded-[28px] overflow-hidden shadow-lg bg-[#6367FF]"
                 >
-                <div class="absolute inset-0 bg-gradient-to-t from-black/78 via-black/22 to-transparent"></div>
-              </div>
-              <div v-else class="absolute inset-0 bg-gradient-to-br from-primary via-[#7C6BC4] to-[#4B3FA0]"></div>
+                  <!-- Background Image -->
+                  <div v-if="banner.image" class="absolute inset-0">
+                    <img :src="banner.image" 
+                         class="w-full h-full object-cover opacity-90" 
+                         :alt="banner.title"
+                         loading="eager"
+                    >
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                  </div>
+                  
+                  <!-- Fallback Gradient (visible if image fails or missing) -->
+                  <div v-else class="absolute inset-0 bg-gradient-to-br from-[#6367FF] to-[#8B5CF6]"></div>
 
-              <!-- Content Overlay -->
-              <div class="absolute inset-0 flex flex-col justify-end p-6 pb-8">
-                <h2 class="text-white text-[22px] sm:text-3xl font-black mb-1 drop-shadow-md leading-tight">{{ banner.title }}</h2>
-                <p class="text-white/90 text-xs sm:text-sm font-medium mb-4 line-clamp-2 drop-shadow-md max-w-[88%]">{{ banner.description }}</p>
-              <div v-if="banner.button_text"
-                     class="self-start px-5 py-2.5 bg-white text-primary rounded-xl font-bold text-[11px] shadow-md shadow-black/10 active:scale-95 transition-transform"
-                     @click="handleBannerClick(banner.button_url)"
-                >
-                  {{ banner.button_text }}
+                  <!-- Content -->
+                  <div class="absolute inset-0 flex flex-col justify-end p-6 pb-8">
+                    <h2 class="text-white text-2xl font-black mb-1 drop-shadow-lg leading-tight">{{ banner.title }}</h2>
+                    <p class="text-white/90 text-sm font-medium mb-4 line-clamp-2 drop-shadow-md max-w-[90%]">{{ banner.description }}</p>
+                    <div v-if="banner.button_text"
+                         class="self-start px-5 py-2.5 bg-white text-[#6367FF] rounded-xl font-bold text-xs shadow-xl active:scale-95 transition-transform"
+                         @click="handleBannerClick(banner.button_url)"
+                    >
+                      {{ banner.button_text }}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </transition>
+            </template>
+          </div>
 
-            <!-- Empty State / Default Fallback -->
-            <div v-if="banners.length === 0" key="fallback" class="w-full h-full bg-gradient-to-br from-primary via-[#7C6BC4] to-[#4B3FA0] rounded-2xl flex flex-col items-center justify-center p-6 text-center">
-              <div class="bg-white/20 p-4 rounded-full mb-4 backdrop-blur-md ring-8 ring-white/5">
-                <img src="/logo.png" class="w-16 h-16 object-contain" alt="Picpic">
-              </div>
-              <p class="text-white/60 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">Stay tuned</p>
-              <h2 class="text-white text-xl font-bold">Kumpul dan bercerita</h2>
-            </div>
-          </transition-group>
+          <!-- Empty Fallback -->
+          <div v-if="banners.length === 0" class="w-full h-full bg-primary rounded-[28px] flex items-center justify-center">
+             <img src="/logo.png" class="w-12 h-12 opacity-20" alt="Logo">
+          </div>
 
-          <!-- Dots Indicator -->
-          <div v-if="banners.length > 1" class="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
+          <!-- Dots -->
+          <div v-if="banners.length > 1" class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-30">
             <button v-for="(_, index) in banners" 
                     :key="index"
                     class="h-1.5 rounded-full transition-all duration-300"
@@ -91,42 +93,7 @@
         </div>
       </div>
 
-      <!-- ── FEATURED SHOWCASE ───────────────────────────────── -->
-      <div v-if="featuredItem" class="px-5 sm:px-6 mt-6">
-        <div class="app-card-lg app-pressable p-4 sm:p-5 shadow-[0_14px_35px_rgba(99,103,255,0.12)]">
-          <div class="flex items-start justify-between mb-3">
-            <div>
-              <p class="text-[10px] tracking-[0.18em] uppercase text-primary/50 font-bold">Pilihan Hari Ini</p>
-              <h3 class="app-section-title text-primary mt-1">{{ featuredItem.name }}</h3>
-            </div>
-            <span class="bg-primary/10 text-primary text-[11px] font-bold px-3 py-1 rounded-full">
-              {{ formatPrice(featuredItem.price) }}
-            </span>
-          </div>
 
-          <div class="bg-gradient-to-br from-[#f2f4ff] to-[#eef1ff] rounded-2xl p-4 flex items-center gap-4 relative overflow-hidden border border-white">
-            <div class="absolute -right-10 -top-10 w-28 h-28 rounded-full bg-primary/10"></div>
-            <img
-              :src="featuredItem.image"
-              :alt="featuredItem.name"
-              class="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-2xl shadow-md shadow-primary/10 app-pressable"
-            />
-            <div class="flex-1 min-w-0">
-              <p class="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-3">
-                {{ featuredItem.description || 'Rasa seimbang dengan aroma khas, cocok untuk menemani aktivitasmu.' }}
-              </p>
-              <div class="flex items-center gap-2">
-                <button class="app-btn-primary px-4 py-2 text-xs shadow-lg shadow-primary/30" @click.stop="addToCart(featuredItem)">
-                  Order Sekarang
-                </button>
-                <button class="bg-white border border-gray-200 text-primary px-3 py-2 rounded-xl text-xs font-semibold" @click.stop="goToMenu">
-                  Lihat Menu
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- ── KATEGORI ───────────────────────────────────────── -->
       <div class="mt-10">

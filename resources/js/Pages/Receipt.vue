@@ -356,12 +356,14 @@ onMounted(() => {
     margin: 0;
     size: 58mm auto;
   }
-  
+
   .receipt-container {
     background: transparent;
     padding: 0;
     margin: 0;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     min-height: auto;
   }
 
@@ -370,9 +372,10 @@ onMounted(() => {
   }
 
   .receipt-content {
-    width: 100%;
-    padding: 0;
-    margin: 0;
+    width: 58mm;
+    max-width: 58mm;
+    padding: 2mm 3mm;
+    margin: 0 auto;
     box-shadow: none;
   }
 }
