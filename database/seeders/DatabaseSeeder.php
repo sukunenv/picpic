@@ -17,8 +17,8 @@ class DatabaseSeeder extends Seeder
     {
         // Admin User
         User::updateOrCreate(
-            ['email' => 'admin@picpic.com'],
-            ['name' => 'Admin Picpic', 'password' => bcrypt('picpic123'), 'is_admin' => true]
+            ['email' => env('ADMIN_EMAIL', 'admin@picpic.com')],
+            ['name' => 'Admin Picpic', 'password' => bcrypt(env('ADMIN_PASSWORD', 'picpic123')), 'is_admin' => true]
         );
 
         // Test User
