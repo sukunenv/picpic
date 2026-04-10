@@ -1,6 +1,8 @@
 {
   "build": { "builder": "DOCKERFILE" },
   "deploy": {
-    "startCommand": "bash /start.sh"
+    "startCommand": "bash /start.sh",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300
   }
 }

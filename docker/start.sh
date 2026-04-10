@@ -52,7 +52,8 @@ php artisan view:clear
 # ============================================================
 if [ "${MAINTENANCE}" = "true" ]; then
     echo "🔧 MAINTENANCE MODE: Aktifkan (php artisan down)..."
-    php artisan down --no-interaction
+    # --allow=127.0.0.1 → Railway healthcheck dari localhost tetap return 200
+    php artisan down --allow=127.0.0.1 --no-interaction
 else
     echo "✅ MAINTENANCE MODE: Nonaktif (php artisan up)..."
     php artisan up --no-interaction

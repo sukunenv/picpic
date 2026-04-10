@@ -13,6 +13,13 @@ use App\Models\Banner;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// ── HEALTHCHECK ROUTE ─────────────────────────────────────
+// Selalu return 200 — dipakai Railway healthcheck,
+// tidak terpengaruh maintenance mode.
+Route::get('/health', function () {
+    return response('OK', 200);
+});
+
 // ── USER ROUTES (PWA) ──────────────────────────────────
 Route::get('/', function () {
     return Inertia::render('Home');
