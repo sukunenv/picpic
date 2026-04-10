@@ -144,16 +144,12 @@
               >
                 <PrinterIcon class="h-5 w-5" />
               </a>
-              <button v-if="order.payment_status === 'unpaid'" @click="openPayModal(order)" class="flex-1 sm:flex-none bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold text-xs px-3 py-2 rounded-lg transition-colors shadow-sm">
-                Tandai Dibayar
-              </button>
-              
-              <button v-if="order.status === 'pending'" @click="updateStatus(order.id, 'processing')" class="flex-1 sm:flex-none bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors shadow-sm">
-                Proses
-              </button>
-              
-              <button v-if="order.status === 'processing'" @click="updateStatus(order.id, 'done')" class="flex-1 sm:flex-none bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors shadow-sm">
-                Selesai
+              <button 
+                v-if="order.payment_status === 'unpaid' || order.status === 'pending'" 
+                @click="quickConfirmOrder(order)" 
+                class="flex-1 sm:flex-none bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1"
+              >
+                &check; Konfirmasi Bayar
               </button>
             </div>
           </div>
@@ -458,6 +454,12 @@ function getStatusLabel(status) {
 
 function updateStatus(id, status) {
   router.post(route('admin.orders.status', id), { status }, { preserveScroll: true });
+}
+
+function quickConfirmOrder(order) {
+  if (confirm('Konfirmasi pembayaran order ini?')) {
+    router.post(route('admin.orders.quickConfirm', order.id), {}, { preserveScroll: true });
+  }
 }
 
 const showPayModal = ref(false);

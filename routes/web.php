@@ -71,6 +71,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/kasir', [AdminOrderController::class, 'kasir'])->name('admin.kasir');
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status');
     Route::post('/orders/{order}/payment', [AdminOrderController::class, 'updatePayment'])->name('admin.orders.payment');
+    Route::post('/orders/{order}/quick-confirm', [AdminOrderController::class, 'quickConfirm'])->name('admin.orders.quickConfirm');
     
     // Menu Management
     Route::get('/menu', [AdminMenuItemController::class, 'index'])->name('admin.menu');

@@ -63,6 +63,17 @@ class OrderController extends Controller
         ]);
     }
 
+    public function quickConfirm(Order $order)
+    {
+        $order->update([
+            'payment_status' => 'paid',
+            'payment_method' => 'cash',
+            'status' => 'done'
+        ]);
+
+        return redirect()->back()->with('success', 'Pesanan berhasil dikonfirmasi (Lunas & Selesai).');
+    }
+
     public function updateStatus(Order $order, Request $request)
     {
         $request->validate([
