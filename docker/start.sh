@@ -45,6 +45,19 @@ php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 
+# ============================================================
+# Maintenance Mode
+# Set MAINTENANCE=true di Railway Variables untuk aktifkan,
+# MAINTENANCE=false (atau tidak ada) untuk matikan.
+# ============================================================
+if [ "${MAINTENANCE}" = "true" ]; then
+    echo "🔧 MAINTENANCE MODE: Aktifkan (php artisan down)..."
+    php artisan down --no-interaction
+else
+    echo "✅ MAINTENANCE MODE: Nonaktif (php artisan up)..."
+    php artisan up --no-interaction
+fi
+
 # Gunakan 'exec' agar apache2 mengambil PID 1, mencegah Railway mendeteksi 
 # bash parent yang mati duluan sebagai "Crashed"
 exec apache2-foreground
