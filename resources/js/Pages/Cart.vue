@@ -754,3 +754,4 @@ function formatPrice(price) {
 .modal-enter-active, .modal-leave-active { transition: opacity 0.3s; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
 </style>
+
